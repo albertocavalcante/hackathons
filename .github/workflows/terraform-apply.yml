@@ -54,6 +54,7 @@ jobs:
       with:
         path: ${{ env.TERRAFORM_PATH }}
         workspace: ${{ env.TF_WORKSPACE }}
+        auto_approve: true
 
     - name: Get Terraform outputs
       id: output

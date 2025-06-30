@@ -1,4 +1,4 @@
-# Hackathons Mono Repository
+# Hackathons Monorepo
 
 A centralized workspace for AI/ML hackathons, competitions, and experimental projects. Each event is organized in dated directories with self-contained infrastructure and documentation.
 
@@ -15,7 +15,7 @@ hackathons/
 └── README.md                       # This file
 ```
 
-> **Note**: GitHub workflows are located at the repository root because GitHub only supports workflows in `.github/workflows/` regardless of mono repository structure.
+> **Note**: GitHub workflows are located at the repository root because GitHub only supports workflows in `.github/workflows/` regardless of monorepo structure.
 
 ## Projects
 
@@ -45,7 +45,7 @@ This repository includes tools for seamless post-squash-merge rebases:
 ## Workspace Integration
 
 Each project includes a VS Code workspace file that integrates:
-- This mono repository for organization and shared infrastructure
+- This monorepo for organization and shared infrastructure
 - External forks and dependencies for project-specific technologies
 - Coordinated development across multiple repositories while maintaining isolation
 
