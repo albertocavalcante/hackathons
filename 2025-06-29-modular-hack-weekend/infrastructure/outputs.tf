@@ -58,19 +58,19 @@ output "setup_commands" {
   description = "Commands to run after SSH'ing into the instance"
   value       = <<-EOF
     # After connecting via SSH, run these commands:
-    
+
     # Install Modular Platform
     pip install modular --index-url https://dl.modular.com/public/nightly/python/simple/
-    
+
     # Install additional ML frameworks
     pip install openai-whisper tinygrad
-    
+
     # Create workspace
     mkdir -p ~/hackathon && cd ~/hackathon
-    
+
     # Clone your hackathon repositories (replace with actual repos)
     # git clone <your-hackathon-repo>
-    
+
     # Start MAX server for inference
     # max serve --model-path=modularai/Llama-3.1-8B-Instruct-GGUF
   EOF

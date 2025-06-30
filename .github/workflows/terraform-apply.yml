@@ -18,13 +18,13 @@ env:
   TERRAFORM_CLOUD_TOKENS: app.terraform.io=${{ secrets.TF_API_TOKEN }}
   TF_CLOUD_ORGANIZATION: "alberto"
   TF_WORKSPACE: "modular-hackathon-jun-2025"
-  
+
   # Provider Configuration
   LAMBDALABS_API_KEY: ${{ secrets.LAMBDALABS_API_KEY }}
-  
+
   # GitHub Actions Configuration
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
+
   # Project Configuration
   TERRAFORM_PATH: "2025-06-29-modular-hack-weekend/infrastructure"
 
@@ -33,7 +33,7 @@ jobs:
     name: 'Terraform Apply'
     runs-on: ubuntu-latest
     environment: production
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -65,28 +65,28 @@ jobs:
       with:
         script: |
           const output = `### 🚀 Infrastructure Deployed Successfully!
-          
+
           **Instance Details:**
           - **IP**: ${{ steps.output.outputs.instance_ip }}
           - **ID**: ${{ steps.output.outputs.instance_id }}
           - **Type**: ${{ steps.output.outputs.instance_type }}
-          
+
           **Next Steps:**
           \`\`\`bash
           # Connect to instance
           cd 2025-06-29-modular-hack-weekend
           make ssh
-          
+
           # Monitor status
           make status
-          
+
           # When done, clean up resources
           make destroy
           \`\`\`
-          
+
           💰 **Remember**: Destroy resources when not in use to avoid charges!
           `;
-          
+
           github.rest.repos.createCommitComment({
             owner: context.repo.owner,
             repo: context.repo.repo,

@@ -14,18 +14,18 @@ locals {
     #!/bin/bash
     # Install additional dependencies for hackathon
     sudo apt-get update
-    
+
     # Install Modular if not present
     pip install modular --index-url https://dl.modular.com/public/nightly/python/simple/ --extra-index-url https://download.pytorch.org/whl/cpu
-    
+
     # Install additional Python packages
     pip install whisper-openai
     pip install tinygrad
-    
+
     # Set up workspace directory
     mkdir -p /home/ubuntu/hackathon
     cd /home/ubuntu/hackathon
-    
+
     echo "GPU instance ready for Modular hackathon development!"
     echo "Instance type: ${var.instance_type}"
     echo "Cost: ${lookup({

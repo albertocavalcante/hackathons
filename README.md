@@ -5,6 +5,7 @@ A centralized workspace for AI/ML hackathons, competitions, and experimental pro
 ## 🎯 Active Projects
 
 ### 🚀 [Modular AI Hackathon (June 29, 2025)](./2025-06-29-modular-hack-weekend/)
+
 Modular Platform, MAX inference, Mojo programming, cloud GPU infrastructure
 
 ---
@@ -32,10 +33,12 @@ The workspace approach enables coordinated development across multiple related r
 ## 📁 Project Organization
 
 ### Directory Naming Convention
+
 - **Format**: `YYYY-MM-DD-event-name`
 - **Example**: `2025-06-29-modular-hack-weekend`
 
 ### Standard Project Structure
+
 ```text
 YYYY-MM-DD-event-name/
 ├── README.md                   # Project overview and setup guide
@@ -56,12 +59,14 @@ YYYY-MM-DD-event-name/
 ## 🤝 Contributing
 
 ### Adding New Hackathons
+
 1. Create dated directory: `YYYY-MM-DD-event-name`
 2. Copy structure from existing successful project
 3. Update project documentation
 4. Add project link to this README
 
 ### Development Workflow
+
 - Each project is self-contained with its own infrastructure
 - Use project-specific Makefiles for automation
 - Follow CI/CD patterns established in `.github/workflows/`

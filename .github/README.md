@@ -7,24 +7,28 @@ This directory contains GitHub Actions workflows for automated Terraform infrast
 ## 🏗️ Workflow Overview
 
 ### 1. `terraform-validation.yml`
+
 - **Trigger**: PRs/pushes affecting any Terraform files
 - **Purpose**: Comprehensive validation across entire repository
 - **Checks**: Format, lint, security, naming conventions
 - **Scope**: **ALL** Terraform files in the repository
 
 ### 2. `terraform-plan.yml`
+
 - **Trigger**: Pull requests affecting infrastructure files
 - **Purpose**: Generate and review Terraform plans
 - **Output**: Plan details commented on PR
 - **Validation**: Format, TFLint, validation before planning
 
 ### 3. `terraform-apply.yml`  
+
 - **Trigger**: Push to main branch (after PR merge)
 - **Purpose**: Apply approved infrastructure changes
 - **Protection**: Requires `production` environment approval
 - **Validation**: Format, TFLint, validation before applying
 
 ### 4. `terraform-destroy.yml`
+
 - **Trigger**: Manual workflow dispatch
 - **Purpose**: Destroy all infrastructure resources
 - **Safety**: Requires typing "DESTROY" to confirm
@@ -33,6 +37,7 @@ This directory contains GitHub Actions workflows for automated Terraform infrast
 ## ⚙️ Setup Requirements
 
 ### 1. GitHub Secrets
+
 Configure these secrets in your repository settings:
 
 ```bash
@@ -42,6 +47,7 @@ LAMBDALABS_API_KEY=your-lambda-cloud-api-key
 ```
 
 ### 2. GitHub Environment
+
 Create a `production` environment with protection rules:
 
 1. Go to **Settings** > **Environments** > **New environment**
@@ -52,6 +58,7 @@ Create a `production` environment with protection rules:
    - ⚠️ **Deployment branches**: Only `main` branch
 
 ### 3. Branch Protection Rules
+
 Protect the `main` branch:
 
 1. Go to **Settings** > **Branches** > **Add rule**
@@ -67,6 +74,7 @@ Protect the `main` branch:
 ### Standard Development Flow
 
 1. **Create Feature Branch**
+
    ```bash
    git checkout -b feature/add-gpu-instance
    # Make infrastructure changes
@@ -116,11 +124,13 @@ Protect the `main` branch:
 ## 📊 Monitoring
 
 ### View Workflow Status
+
 - **Actions Tab**: See all workflow runs
 - **Pull Requests**: Plan output in comments
 - **Environments**: Track production deployments
 
 ### Terraform Cloud Integration
+
 - **Remote State**: All state managed in Terraform Cloud
 - **Execution History**: View runs in Terraform Cloud console
 - **Team Collaboration**: Shared workspace access
@@ -130,18 +140,21 @@ Protect the `main` branch:
 ### Common Issues
 
 1. **Terraform Cloud Authentication**
+
    ```bash
    # Check TF_API_TOKEN secret is set correctly
    # Verify Terraform Cloud organization/workspace names
    ```
 
 2. **Lambda Cloud API Issues**
+
    ```bash
    # Verify LAMBDALABS_API_KEY secret
    # Check Lambda Cloud account status
    ```
 
 3. **GitHub Environment Issues**
+
    ```bash
    # Ensure 'production' environment exists
    # Verify environment protection rules

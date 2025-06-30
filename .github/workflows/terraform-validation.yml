@@ -30,7 +30,7 @@ jobs:
   terraform-validation:
     name: 'Terraform Validation'
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -56,7 +56,7 @@ jobs:
         TERRAFORM_DIRS=$(find . -name "*.tf" -type f -print0 | xargs -0 -I {} dirname {} | sort -u | grep -v '^\.$' || true)
         echo "Found Terraform directories:"
         echo "$TERRAFORM_DIRS"
-        
+
         # Convert to JSON array for matrix strategy
         DIRS_JSON=$(echo "$TERRAFORM_DIRS" | jq -R -s -c 'split("\n") | map(select(length > 0))')
         echo "terraform_dirs=$DIRS_JSON" >> "$GITHUB_OUTPUT"
@@ -75,11 +75,11 @@ jobs:
       run: |
         echo "🔍 Running TFLint on all Terraform directories..."
         TFLINT_FAILED=false
-        
+
         while IFS= read -r dir; do
           if [ -n "$dir" ] && [ -d "$dir" ]; then
             echo "📁 Linting directory: $dir"
-            
+
             # Run TFLint for each directory
             if tflint --chdir="$dir"; then
               echo "✅ TFLint passed for $dir"
@@ -90,12 +90,12 @@ jobs:
             echo ""
           fi
         done <<< "$(echo '${{ steps.find-dirs.outputs.terraform_dirs }}' | jq -r '.[]')"
-        
+
         if [ "$TFLINT_FAILED" = true ]; then
           echo "❌ TFLint found issues in one or more directories"
           exit 1
         fi
-        
+
         echo "✅ TFLint passed for all directories"
 
     - name: Run Trivy security scan
@@ -136,7 +136,7 @@ jobs:
           echo ""
           echo "| Check | Status |"
           echo "|-------|--------|"
-          
+
           # Check individual step outcomes
           if [ "${{ job.status }}" = "success" ]; then
             echo "| Format Check (dflook) | ✅ Passed |"
@@ -149,7 +149,7 @@ jobs:
             echo "| TFLint Analysis | ❌ Failed |"
             echo "| Security Scan (Trivy) | ❌ Failed |"
           fi
-          
+
           echo ""
           echo "### 🎯 Validated Directories:"
           echo '${{ steps.find-dirs.outputs.terraform_dirs }}' | jq -r '.[]' | sed 's/^/- /'

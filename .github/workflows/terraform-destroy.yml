@@ -18,13 +18,13 @@ env:
   TERRAFORM_CLOUD_TOKENS: app.terraform.io=${{ secrets.TF_API_TOKEN }}
   TF_CLOUD_ORGANIZATION: "alberto"
   TF_WORKSPACE: "modular-hackathon-jun-2025"
-  
+
   # Provider Configuration
   LAMBDALABS_API_KEY: ${{ secrets.LAMBDALABS_API_KEY }}
-  
+
   # GitHub Actions Configuration
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
+
   # Project Configuration
   TERRAFORM_PATH: "2025-06-29-modular-hack-weekend/infrastructure"
 
@@ -33,7 +33,7 @@ jobs:
     name: 'Terraform Destroy'
     runs-on: ubuntu-latest
     environment: production
-    
+
     steps:
     - name: Validate Confirmation
       run: |
@@ -66,16 +66,16 @@ jobs:
       with:
         script: |
           const output = `### 🔥 Infrastructure Destroyed Successfully!
-          
+
           All Lambda Cloud GPU resources have been destroyed.
-          
+
           **Cost Impact**: Billing has stopped for all provisioned resources.
-          
-          **Next Steps**: 
+
+          **Next Steps**:
           - Resources can be re-deployed via PR merge to main branch
           - Check Lambda Cloud console to verify resource cleanup
           `;
-          
+
           github.rest.repos.createCommitComment({
             owner: context.repo.owner,
             repo: context.repo.repo,

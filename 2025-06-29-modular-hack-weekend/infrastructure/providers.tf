@@ -17,7 +17,7 @@ terraform {
   }
 
   required_version = ">= 1.1"
-  
+
   # Environment variables used:
   # TF_CLOUD_ORGANIZATION - Terraform Cloud organization name
   # TF_WORKSPACE - Terraform Cloud workspace name

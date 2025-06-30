@@ -49,7 +49,7 @@ TFLINT_FAILED=false
 while IFS= read -r dir; do
     if [ -n "$dir" ] && [ -d "$dir" ]; then
         echo "📁 Processing directory: $dir"
-        
+
         # Validate Terraform configuration
         echo "  🔍 Running terraform validate..."
         (
@@ -57,14 +57,14 @@ while IFS= read -r dir; do
             terraform init -backend=false -input=false >/dev/null 2>&1
             terraform validate
         )
-        
+
         if [ $? -ne 0 ]; then
             echo "  ❌ Validation failed for $dir"
             VALIDATION_FAILED=true
         else
             echo "  ✅ Validation successful"
         fi
-        
+
         # Run TFLint if available
         if [ "$TFLINT_AVAILABLE" = true ]; then
             echo "  📋 Running TFLint..."
@@ -75,7 +75,7 @@ while IFS= read -r dir; do
                 TFLINT_FAILED=true
             fi
         fi
-        
+
         echo ""
     fi
 done <<< "$TERRAFORM_DIRS"

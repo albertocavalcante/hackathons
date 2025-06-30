@@ -124,8 +124,8 @@ Based on the workspace components, typical hackathon projects involve cloud.lamb
 
 ```
 Local Development → Terraform Provision → cloud.lambda.ai GPU → MAX/Mojo Inference
-     ↓                        ↓                    ↓                    ↓
-   Whisper        →    GPU Instance Setup   →   Model Loading    →   Results
+  ↓                        ↓                    ↓                    ↓
+Whisper        →    GPU Instance Setup   →   Model Loading    →   Results
 ```
 
 ### Cross-Project Integration Points
@@ -279,10 +279,10 @@ export LAMBDA_CLOUD_API_KEY="your-api-key"
 
 ### Modular Platform Documentation
 
-- **LLM-friendly docs**: https://docs.modular.com/llms.txt
-- **Mojo API docs**: https://docs.modular.com/llms-mojo.txt  
-- **Python API docs**: https://docs.modular.com/llms-python.txt
-- **Comprehensive docs**: https://docs.modular.com/llms-full.txt
+- **LLM-friendly docs**: <https://docs.modular.com/llms.txt>
+- **Mojo API docs**: <https://docs.modular.com/llms-mojo.txt>  
+- **Python API docs**: <https://docs.modular.com/llms-python.txt>
+- **Comprehensive docs**: <https://docs.modular.com/llms-full.txt>
 
 ### Key Technical Areas from llms.txt
 

@@ -11,6 +11,7 @@ A comprehensive project focusing on Modular AI Platform technologies, MAX infere
 This hackathon explores the integration of cutting-edge AI infrastructure technologies:
 
 ### Core Technologies
+
 - **[Modular Platform](../fork-modular/)**: High-performance AI inference with MAX engine
 - **[Mojo Programming Language](../fork-modular/mojo/)**: Systems programming optimized for AI workloads
 - **[OpenAI Whisper](../fork-openai-whisper/)**: Automatic speech recognition system
@@ -19,6 +20,7 @@ This hackathon explores the integration of cutting-edge AI infrastructure techno
 - **Terraform**: Infrastructure as code with Terraform Cloud backend
 
 ### Architecture Focus
+
 - **Multi-modal AI pipelines**: Speech → Text → Inference workflows
 - **Cloud-first GPU execution**: All computations on Lambda Cloud infrastructure
 - **Performance optimization**: Mojo kernels optimized for cloud GPU hardware
@@ -31,18 +33,19 @@ This hackathon explores the integration of cutting-edge AI infrastructure techno
 ### Prerequisites
 
 1. **Development Tools**:
-   ```bash
-   # Install required tools
-   brew install terraform git
-   curl -fsSL https://pixi.sh/install.sh | bash
-   ```
+
+  ```bash
+  # Install required tools
+  brew install terraform git
+  curl -fsSL https://pixi.sh/install.sh | bash
+  ```
 
 2. **Cloud Access**:
-   - [Lambda Cloud account](https://lambdalabs.com/service/gpu-cloud) and API key
-   - [Terraform Cloud account](https://app.terraform.io/) for remote state management
+  - [Lambda Cloud account](https://lambdalabs.com/service/gpu-cloud) and API key
+  - [Terraform Cloud account](https://app.terraform.io/) for remote state management
 
 3. **VS Code Setup**:
-   - Install VS Code and open workspace: `modular-hackathon.code-workspace`
+  - Install VS Code and open workspace: `modular-hackathon.code-workspace`
 
 ### Infrastructure Setup
 
@@ -70,6 +73,7 @@ make destroy
 ```
 
 ### Quick Commands Reference
+
 ```bash
 make help                    # Show all available commands
 make cloud-setup            # Initial Terraform Cloud setup
@@ -85,6 +89,7 @@ make destroy                # Clean up all resources
 ## 🛠️ Technology Stack
 
 ### Infrastructure & Cloud
+
 - **Cloud GPUs**: Lambda Cloud (A10, A100, H100 instances)
 - **Infrastructure as Code**: Terraform with Terraform Cloud backend
 - **Provider**: [terraform-provider-lambdalabs](../terraform-provider-lambdalabs/)
@@ -92,12 +97,14 @@ make destroy                # Clean up all resources
 - **Cost Management**: Automated resource lifecycle management
 
 ### AI/ML Frameworks
+
 - **Modular Platform**: High-performance AI inference with MAX
 - **Mojo**: Systems programming language for AI workloads
 - **OpenAI Whisper**: Automatic speech recognition
 - **TinyGrad**: Lightweight deep learning framework
 
 ### Development Environment
+
 - **Build System**: Bazel (via MODULE.bazel)
 - **Environment Management**: Pixi for Python dependencies
 - **Editor**: VS Code with multi-root workspace support
@@ -108,6 +115,7 @@ make destroy                # Clean up all resources
 ## 💰 Cost Management
 
 ### GPU Instance Pricing (Lambda Cloud)
+
 | Instance Type | GPU | VRAM | Price/Hour | Use Case |
 |---------------|-----|------|------------|----------|
 | **RTX 6000** | RTX 6000 | 24GB | **$0.50** | Development, testing |
@@ -116,11 +124,13 @@ make destroy                # Clean up all resources
 | **A100 (80GB)** | A100 | 80GB | **$1.75** | Large model training |
 
 ### Cost Estimation
+
 - **24-hour hackathon with RTX 6000**: ~$12
 - **12-hour development session with A10**: ~$9
 - **4-hour intensive compute with A100**: ~$4.40
 
 ### Best Practices
+
 - **Always destroy resources** when not in use: `make destroy`
 - **Monitor costs** via Lambda Cloud dashboard
 - **Set up billing alerts** for cost control
@@ -131,16 +141,20 @@ make destroy                # Clean up all resources
 ## 🔧 Development Workflow
 
 ### Multi-Project Development
+
 This project integrates with several external repositories in a coordinated workspace:
 
 #### Cross-Repository Integration
+
 1. **Data Flow**: Audio → Whisper (cloud GPU) → Text → MAX/Mojo processing (cloud GPU)
 2. **Infrastructure**: terraform-provider-lambda manages cloud.lambda.ai GPU resources
 3. **Performance Layer**: Mojo kernels optimized for cloud.lambda.ai GPU hardware
 4. **Training Pipeline**: TinyGrad distributed across provisioned GPU instances
 
 #### Workspace Integration
+
 The VS Code workspace (`modular-hackathon.code-workspace`) includes:
+
 ```json
 {
   "folders": [
@@ -156,6 +170,7 @@ The VS Code workspace (`modular-hackathon.code-workspace`) includes:
 ### Essential Commands from Referenced Projects
 
 #### Modular Platform (fork-modular)
+
 ```bash
 # Build with Bazel wrapper
 cd ../fork-modular
@@ -174,6 +189,7 @@ pixi run test
 ```
 
 #### OpenAI Whisper Integration
+
 ```bash
 cd ../fork-openai-whisper
 pip install -e .
@@ -181,6 +197,7 @@ python -m pytest tests/
 ```
 
 #### TinyGrad Framework
+
 ```bash
 cd ../fork-tinygrad
 python -m pytest test/
@@ -192,11 +209,13 @@ python examples/mnist.py
 ## 🏗️ Infrastructure Details
 
 ### Terraform Configuration
+
 - **Remote State**: Managed in Terraform Cloud workspace `modular-hackathon-jun-2025`
 - **Provider**: `elct9620/lambdalabs` for Lambda Cloud resources
 - **Organization**: Infrastructure organized in modular `.tf` files
 
 ### Terraform Files Structure
+
 ```text
 infrastructure/
 ├── main.tf                  # Entry point and documentation
@@ -210,6 +229,7 @@ infrastructure/
 ```
 
 ### CI/CD Integration
+
 - **GitHub Actions**: Automated Terraform validation and deployment
 - **Plan-first workflows**: All infrastructure changes reviewed before deployment
 - **Security scanning**: TFLint and format checking on all Terraform files
@@ -220,12 +240,14 @@ infrastructure/
 ## 🔒 Security & Best Practices
 
 ### Credential Management
+
 - **Environment Variables**: Store API keys securely
 - **No Secrets in Git**: Use .gitignore and environment files
 - **Access Controls**: Limit cloud resource permissions
 - **Monitoring**: Track resource usage and access
 
 ### Development Security
+
 ```bash
 # Required environment variables
 export LAMBDALABS_API_KEY="your-lambda-cloud-api-key"
@@ -236,6 +258,7 @@ export TF_TOKEN_app_terraform_io="your-terraform-cloud-token"
 ```
 
 ### Infrastructure Security
+
 - **SSH Key Management**: Automated SSH key provisioning and cleanup
 - **Network Security**: Proper firewall rules for cloud instances
 - **Resource Tagging**: Clear identification of resources for cost tracking
@@ -246,18 +269,21 @@ export TF_TOKEN_app_terraform_io="your-terraform-cloud-token"
 ## 🔗 Related Resources
 
 ### Documentation Links
+
 - **[Modular Platform Documentation](https://docs.modular.com/)**
 - **[Lambda Cloud Documentation](https://docs.lambdalabs.com/)**
 - **[Terraform Cloud Documentation](https://developer.hashicorp.com/terraform/cloud-docs)**
 - **[TFLint Documentation](https://github.com/terraform-linters/tflint)**
 
 ### Repository Links
+
 - **[🏠 Hackathons Mono Repo](../README.md)**: Main repository overview
 - **[🤖 Claude Development Guide](./CLAUDE.md)**: Detailed development guidance
 - **[🔧 GitHub Actions Setup](../.github/README.md)**: CI/CD configuration guide
 - **[🛠️ Infrastructure Code](./infrastructure/)**: Terraform configuration files
 
 ### External Integrations
+
 - **[fork-modular](../fork-modular/)**: Modular Platform with MAX and Mojo
 - **[fork-openai-whisper](../fork-openai-whisper/)**: Speech recognition system
 - **[terraform-provider-lambdalabs](../terraform-provider-lambdalabs/)**: Infrastructure provider
@@ -270,6 +296,7 @@ export TF_TOKEN_app_terraform_io="your-terraform-cloud-token"
 ### Common Issues
 
 #### Infrastructure Problems
+
 ```bash
 # Check Terraform Cloud authentication
 make cloud-status
@@ -285,6 +312,7 @@ make status
 ```
 
 #### Connection Issues
+
 ```bash
 # Verify instance is running
 make status
@@ -297,6 +325,7 @@ ssh -i ~/.sshkeys/hackathons/modular-jun-2025/lambda_gpu_key ubuntu@$(terraform 
 ```
 
 #### Cost Control
+
 ```bash
 # Emergency resource cleanup
 make emergency-stop
@@ -315,6 +344,7 @@ make status
 4. **Development Issues**: Refer to CLAUDE.md for debugging guidance
 
 ### Emergency Procedures
+
 - **Resource Cleanup**: `make emergency-stop` (immediate destruction)
 - **Access Issues**: Check API keys and cloud credentials
 - **Cost Overruns**: Immediately destroy all resources: `make destroy`

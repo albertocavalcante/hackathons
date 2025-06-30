@@ -16,13 +16,13 @@ env:
   TERRAFORM_CLOUD_TOKENS: app.terraform.io=${{ secrets.TF_API_TOKEN }}
   TF_CLOUD_ORGANIZATION: "alberto"
   TF_WORKSPACE: "modular-hackathon-jun-2025"
-  
+
   # Provider Configuration
   LAMBDALABS_API_KEY: ${{ secrets.LAMBDALABS_API_KEY }}
-  
+
   # GitHub Actions Configuration
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
+
   # Project Configuration
   TERRAFORM_PATH: "2025-06-29-modular-hack-weekend/infrastructure"
 
@@ -30,7 +30,7 @@ jobs:
   terraform-plan:
     name: 'Terraform Plan'
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -57,21 +57,21 @@ jobs:
       with:
         script: |
           const costInfo = `## 💰 Cost Reminder
-          
+
           **Lambda Cloud GPU Pricing:**
           - **RTX 6000**: $0.50/hour (24GB VRAM) - *Best for development*
-          - **A10**: $0.75/hour (24GB VRAM) - *Balanced performance*  
+          - **A10**: $0.75/hour (24GB VRAM) - *Balanced performance*
           - **A100**: $1.10/hour (40GB VRAM) - *High performance*
           - **A100 (80GB)**: $1.75/hour (80GB VRAM) - *Large models*
-          
+
           ⚠️ **Remember**: Always destroy resources when not in use: \`make destroy\`
-          
-          🎯 **Next Steps**: 
+
+          🎯 **Next Steps**:
           1. Review the Terraform plan above
           2. Approve this PR to proceed with deployment
           3. Infrastructure will be deployed automatically on merge
           `;
-          
+
           await github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,

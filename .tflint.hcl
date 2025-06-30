@@ -4,10 +4,10 @@
 config {
   # Enable all rules by default
   disabled_by_default = false
-  
+
   # Force source formatting
   format = "compact"
-  
+
   # Enable colored output
   force = false
 }
