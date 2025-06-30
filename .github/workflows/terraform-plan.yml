@@ -6,9 +6,10 @@ on:
       - '2025-06-29-modular-hack-weekend/infrastructure/**'
       - '.github/workflows/terraform-*.yml'
 
-defaults:
-  run:
-    working-directory: '2025-06-29-modular-hack-weekend/infrastructure'
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
 
 jobs:
   terraform-plan:
@@ -19,78 +20,49 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+    - name: Terraform fmt check
+      uses: dflook/terraform-fmt-check@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
       with:
-        terraform_version: "~1.12"
-        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        path: 2025-06-29-modular-hack-weekend/infrastructure
 
-    - name: Terraform Format Check
-      run: terraform fmt -check -recursive
-
-    - name: Setup TFLint
-      uses: terraform-linters/setup-tflint@v4
+    - name: Terraform validate
+      uses: dflook/terraform-validate@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
       with:
-        tflint_version: latest
+        path: 2025-06-29-modular-hack-weekend/infrastructure
 
-    - name: Initialize TFLint
-      run: tflint --init
-
-    - name: Run TFLint
-      run: tflint
-
-    - name: Terraform Init
-      run: terraform init
-
-    - name: Terraform Validate
-      run: terraform validate
-
-    - name: Terraform Plan
-      id: plan
-      run: |
-        terraform plan -no-color -out=tfplan
-        terraform show -no-color tfplan > plan_output.txt
+    - name: Terraform plan
+      uses: dflook/terraform-plan@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      with:
+        path: 2025-06-29-modular-hack-weekend/infrastructure
+        label: 'Modular Hackathon Infrastructure'
+        add_github_comment: true
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         LAMBDALABS_API_KEY: ${{ secrets.LAMBDALABS_API_KEY }}
 
-    - name: Comment Plan
+    - name: Add Cost Reminder Comment
       uses: actions/github-script@v7
       with:
         script: |
-          const fs = require('fs');
-          const plan = fs.readFileSync('2025-06-29-modular-hack-weekend/infrastructure/plan_output.txt', 'utf8');
-          const maxGitHubBodyCharacters = 65536;
+          const costInfo = `## 💰 Cost Reminder
           
-          function chunkSubstr(str, size) {
-            const numChunks = Math.ceil(str.length / size)
-            const chunks = new Array(numChunks)
-            for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
-              chunks[i] = str.substring(o, o + size)
-            }
-            return chunks
-          }
+          **Lambda Cloud GPU Pricing:**
+          - **RTX 6000**: $0.50/hour (24GB VRAM) - *Best for development*
+          - **A10**: $0.75/hour (24GB VRAM) - *Balanced performance*  
+          - **A100**: $1.10/hour (40GB VRAM) - *High performance*
+          - **A100 (80GB)**: $1.75/hour (80GB VRAM) - *Large models*
           
-          const planChunks = chunkSubstr(plan, maxGitHubBodyCharacters); 
+          ⚠️ **Remember**: Always destroy resources when not in use: \`make destroy\`
           
-          for (let i = 0; i < planChunks.length; i++) {
-            const output = `### 🏗️ Terraform Plan Output (Part ${i + 1}/${planChunks.length})
-            
-            <details><summary>Show Plan</summary>
-            
-            \`\`\`terraform
-            ${planChunks[i]}
-            \`\`\`
-            
-            </details>
-            
-            💰 **Cost Reminder**: A10 GPU = $0.75/hour, RTX 6000 = $0.50/hour, A100 = $1.10/hour
-            ⚠️ **Action Required**: Review plan and approve PR for deployment
-            `;
-            
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            });
-          }
+          🎯 **Next Steps**: 
+          1. Review the Terraform plan above
+          2. Approve this PR to proceed with deployment
+          3. Infrastructure will be deployed automatically on merge
+          `;
+          
+          await github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: costInfo
+          });

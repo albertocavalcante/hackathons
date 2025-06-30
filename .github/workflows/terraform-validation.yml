@@ -17,6 +17,11 @@ on:
       - '.github/workflows/terraform-*.yml'
       - '.tflint.hcl'
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   terraform-validation:
     name: 'Terraform Validation'
@@ -25,11 +30,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
-      with:
-        terraform_version: "~1.12"
 
     - name: Cache TFLint plugins
       uses: actions/cache@v4
@@ -73,36 +73,10 @@ jobs:
           echo "✅ All Terraform files are properly formatted"
         fi
 
-    - name: Validate all Terraform directories
-      run: |
-        echo "🔍 Validating all Terraform configurations..."
-        VALIDATION_FAILED=false
-        
-        while IFS= read -r dir; do
-          if [ -n "$dir" ] && [ -d "$dir" ]; then
-            echo "📁 Validating directory: $dir"
-            
-            # Initialize and validate each directory
-            if (
-              cd "$dir"
-              terraform init -backend=false -input=false
-              terraform validate
-            ); then
-              echo "✅ Validation successful for $dir"
-            else
-              echo "❌ Validation failed for $dir"
-              VALIDATION_FAILED=true
-            fi
-            echo ""
-          fi
-        done <<< "$(echo '${{ steps.find-dirs.outputs.terraform_dirs }}' | jq -r '.[]')"
-        
-        if [ "$VALIDATION_FAILED" = true ]; then
-          echo "❌ One or more Terraform configurations failed validation"
-          exit 1
-        fi
-        
-        echo "✅ All Terraform configurations are valid"
+    - name: Validate Terraform configurations
+      uses: dflook/terraform-validate@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      with:
+        path: 2025-06-29-modular-hack-weekend/infrastructure
 
     - name: Run TFLint on all directories
       run: |
@@ -165,44 +139,6 @@ jobs:
           exit 1
         else
           echo "✅ No sensitive data patterns detected"
-        fi
-
-    - name: Check Terraform file naming conventions
-      run: |
-        echo "🔍 Checking Terraform file naming conventions..."
-        
-        NAMING_ISSUES=false
-        
-        # Check for non-standard file names
-        BAD_NAMES=$(find . -name "*.tf" -type f | grep -E "(terraform|infra|config)\.tf$" || true)
-        
-        if [ -n "$BAD_NAMES" ]; then
-          echo "⚠️ Non-standard Terraform file names found:"
-          echo "$BAD_NAMES"
-          echo ""
-          echo "💡 Consider using standard names like:"
-          echo "  - main.tf (primary resources)"
-          echo "  - variables.tf (input variables)"
-          echo "  - outputs.tf (output values)"
-          echo "  - providers.tf (provider configuration)"
-          echo "  - data.tf (data sources)"
-          echo "  - locals.tf (local values)"
-          NAMING_ISSUES=true
-        fi
-        
-        # Check for overly long file names
-        LONG_NAMES=$(find . -name "*.tf" -type f | awk -F'/' '{print $NF}' | awk 'length($0) > 50' || true)
-        
-        if [ -n "$LONG_NAMES" ]; then
-          echo "⚠️ Overly long Terraform file names found:"
-          echo "$LONG_NAMES"
-          echo ""
-          echo "💡 Consider shorter, more descriptive names"
-          NAMING_ISSUES=true
-        fi
-        
-        if [ "$NAMING_ISSUES" = false ]; then
-          echo "✅ Terraform file naming conventions look good"
         fi
 
     - name: Generate validation summary

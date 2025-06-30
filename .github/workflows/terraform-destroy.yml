@@ -8,9 +8,11 @@ on:
         required: true
         default: ''
 
-defaults:
-  run:
-    working-directory: '2025-06-29-modular-hack-weekend/infrastructure'
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 
 jobs:
   terraform-destroy:
@@ -30,35 +32,22 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+    - name: Terraform fmt check
+      uses: dflook/terraform-fmt-check@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
       with:
-        terraform_version: "~1.12"
-        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        path: 2025-06-29-modular-hack-weekend/infrastructure
 
-    - name: Setup TFLint
-      uses: terraform-linters/setup-tflint@v4
+    - name: Terraform validate
+      uses: dflook/terraform-validate@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
       with:
-        tflint_version: latest
+        path: 2025-06-29-modular-hack-weekend/infrastructure
 
-    - name: Initialize TFLint
-      run: tflint --init
-
-    - name: Run TFLint
-      run: tflint
-
-    - name: Terraform Format Check
-      run: terraform fmt -check -recursive
-
-    - name: Terraform Init
-      run: terraform init
-
-    - name: Terraform Validate
-      run: terraform validate
-
-    - name: Terraform Destroy
-      run: terraform destroy -auto-approve
+    - name: Terraform destroy
+      uses: dflook/terraform-destroy@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      with:
+        path: 2025-06-29-modular-hack-weekend/infrastructure
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         LAMBDALABS_API_KEY: ${{ secrets.LAMBDALABS_API_KEY }}
 
     - name: Comment Results
