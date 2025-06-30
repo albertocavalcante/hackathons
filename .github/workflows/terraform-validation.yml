@@ -74,7 +74,7 @@ jobs:
         fi
 
     - name: Validate Terraform configurations
-      uses: dflook/terraform-validate@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      uses: dflook/terraform-github-actions/terraform-validate@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
       with:
         path: 2025-06-29-modular-hack-weekend/infrastructure
 
