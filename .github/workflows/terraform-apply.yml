@@ -53,12 +53,14 @@ jobs:
       uses: dflook/terraform-github-actions/terraform-apply@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
       with:
         path: ${{ env.TERRAFORM_PATH }}
+        workspace: ${{ env.TF_WORKSPACE }}
 
     - name: Get Terraform outputs
       id: output
       uses: dflook/terraform-github-actions/terraform-output@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
       with:
         path: ${{ env.TERRAFORM_PATH }}
+        workspace: ${{ env.TF_WORKSPACE }}
 
     - name: Comment Results
       uses: actions/github-script@v7

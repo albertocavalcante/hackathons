@@ -44,11 +44,13 @@ jobs:
       uses: dflook/terraform-github-actions/terraform-validate@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
       with:
         path: ${{ env.TERRAFORM_PATH }}
+        workspace: ${{ env.TF_WORKSPACE }}
 
     - name: Terraform plan
       uses: dflook/terraform-github-actions/terraform-plan@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
       with:
         path: ${{ env.TERRAFORM_PATH }}
+        workspace: ${{ env.TF_WORKSPACE }}
         label: 'Modular Hackathon Infrastructure'
         add_github_comment: true
 
