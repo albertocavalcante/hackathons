@@ -21,7 +21,7 @@ resource "lambdalabs_instance" "hackathon_gpu" {
   ssh_key_names      = [local.ssh_key_name]
 
   # Optional: Add file system if needed for persistent storage
-  # file_system_names = var.enable_file_system ? var.file_system_names : []
+  file_system_names = var.enable_file_system ? var.file_system_names : []
 
   # Note: Terraform will automatically handle dependencies for conditional resources
   # No explicit depends_on needed since we reference local.ssh_key_name

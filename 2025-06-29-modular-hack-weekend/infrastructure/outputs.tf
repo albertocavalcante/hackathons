@@ -80,3 +80,18 @@ output "instance_status" {
   description = "Instance provisioning status"
   value       = "Instance provisioned successfully! Use 'make ssh' to connect."
 }
+
+output "available_instance_types" {
+  description = "Available Lambda Cloud instance types"
+  value       = data.lambdalabs_instance_types.available
+}
+
+output "startup_script" {
+  description = "Startup script for manual installation on the instance"
+  value       = local.startup_script
+}
+
+output "project_tags" {
+  description = "Common tags for project resources"
+  value       = local.common_tags
+}
