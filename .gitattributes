@@ -1,0 +1,21 @@
+# Git Attributes for Seamless Rebasing
+# Only includes file types that exist in this hackathons repository
+
+# Auto-generated Terraform lock files - prefer newer version during rebase
+.terraform.lock.hcl merge=ours
+
+# Documentation files - merge intelligently to combine changes
+*.md merge=union
+CLAUDE.md merge=union
+README.md merge=union
+
+# Configuration files that should merge cleanly
+.gitignore merge=union
+.editorconfig merge=union
+
+# Pre-commit config and workflows - these change frequently
+.pre-commit-config.yaml merge=union
+.github/workflows/*.yml merge=union
+
+# Keep auto-formatted files as-is for manual conflict resolution
+# These files have pre-commit hooks that ensure consistent formatting

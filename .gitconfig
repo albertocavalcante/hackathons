@@ -1,0 +1,26 @@
+# Local Git Configuration for Hackathons Repository
+# Better rebase handling for squash-merge scenarios
+
+[rebase]
+    # Use rerere (reuse recorded resolution) to remember conflict resolutions
+    autosquash = true
+
+[rerere]
+    # Remember how conflicts were resolved and auto-apply
+    enabled = true
+    autoupdate = true
+
+[merge]
+    # Use better merge algorithm
+    algorithm = patience
+    # Show original text in conflicts for better context
+    conflictstyle = diff3
+
+[diff]
+    # Better diff algorithm for moves and renames
+    algorithm = patience
+    renames = copies
+
+[pull]
+    # Always rebase when pulling
+    rebase = true
