@@ -1,19 +1,19 @@
-# CLAUDE.md - Hackathons Mono Repository
+# CLAUDE.md - Hackathons Monorepo
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this hackathons mono repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this hackathons monorepo.
 
 **📚 Quick Navigation**: [📖 Repository README](./README.md) • [🔧 GitHub Actions Setup](./.github/README.md) • [🚀 Modular Hackathon](./2025-06-29-modular-hack-weekend/README.md)
 
 ## Repository Overview
 
-This is a mono repository for various hackathons and experimental projects, with each event organized in dated subdirectories. The repository serves as a central workspace for AI/ML hackathons, competitions, and proof-of-concept projects.
+This is a monorepo for various hackathons and experimental projects, with each event organized in dated subdirectories. The repository serves as a central workspace for AI/ML hackathons, competitions, and proof-of-concept projects.
 
-## Mono Repository Structure
+## Monorepo Structure
 
 ```text
-hackathons/ (mono repo root)
+hackathons/ (monorepo root)
 ├── MODULE.bazel                              # Bazel workspace configuration
-├── CLAUDE.md                                 # This file - general mono repo guidance
+├── CLAUDE.md                                 # This file - general monorepo guidance
 ├── README.md                                 # Public-facing repository documentation
 ├── 2025-06-29-modular-hack-weekend/         # Modular AI hackathon project
 │   ├── CLAUDE.md                             # Project-specific Claude guidance
@@ -54,7 +54,7 @@ The repository integrates with VS Code multi-root workspaces:
 - **Common Patterns**: Reuse successful patterns across hackathons
 - **Shared Infrastructure**: Common infrastructure patterns in separate projects
 - **Documentation**: Each project maintains its own CLAUDE.md with specific guidance
-- **Version Control**: Individual project evolution while maintaining mono repo benefits
+- **Version Control**: Individual project evolution while maintaining monorepo benefits
 
 ## Working with Specific Projects
 
@@ -69,7 +69,7 @@ When working on a specific project:
 1. **Change Directory**: Navigate to the specific project directory
 2. **Read Project CLAUDE.md**: Each project has specific guidance and setup instructions
 3. **Use Project Tools**: Each project may have its own Makefile, scripts, and workflows
-4. **Respect Project Scope**: Keep changes isolated to the specific project unless making mono repo improvements
+4. **Respect Project Scope**: Keep changes isolated to the specific project unless making monorepo improvements
 
 ### Example Workflow
 
@@ -206,7 +206,7 @@ git ls-remote --tags https://github.com/terraform-linters/tflint-ruleset-azurerm
 
 ## Emergency Procedures
 
-### Mono Repo Issues
+### Monorepo Issues
 
 - **Workspace Conflicts**: Navigate to specific project directory
 - **Bazel Issues**: Check MODULE.bazel configuration
@@ -226,7 +226,7 @@ git ls-remote --tags https://github.com/terraform-linters/tflint-ruleset-azurerm
 - Keep changes isolated to the specific project
 - Update project documentation as needed
 
-### Mono Repo Level Changes
+### Monorepo Level Changes
 
 - Update this file for structural changes
 - Coordinate across projects when needed
@@ -248,7 +248,7 @@ git ls-remote --tags https://github.com/terraform-linters/tflint-ruleset-azurerm
 - **Monitoring**: Project-appropriate monitoring and logging
 - **External APIs**: Project-specific API integrations
 
-This mono repository structure provides flexibility for diverse hackathon projects while maintaining organization and enabling knowledge sharing across events and experiments.
+This monorepo structure provides flexibility for diverse hackathon projects while maintaining organization and enabling knowledge sharing across events and experiments.
 
 ## Writing & Communication Guidelines
 
