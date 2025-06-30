@@ -61,21 +61,21 @@ rule "terraform_workspace_remote" {
 # AWS provider rules (if we add AWS resources later)
 plugin "aws" {
   enabled = false
-  version = "0.24.1"
+  version = "0.40.0"
   source  = "github.com/terraform-linters/tflint-ruleset-aws"
 }
 
 # Google Cloud provider rules (if we add GCP resources later)
 plugin "google" {
   enabled = false
-  version = "0.24.0"
+  version = "0.34.0"
   source  = "github.com/terraform-linters/tflint-ruleset-google"
 }
 
 # Azure provider rules (if we add Azure resources later)
 plugin "azurerm" {
   enabled = false
-  version = "0.22.0"
+  version = "0.28.0"
   source  = "github.com/terraform-linters/tflint-ruleset-azurerm"
 }
 

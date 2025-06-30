@@ -2,8 +2,6 @@
 # Validate all Terraform configurations in the repository
 # Usage: ./scripts/terraform-validate-all.sh
 
-set -e
-
 echo "🔍 Validating all Terraform configurations..."
 
 # Check if terraform is installed
@@ -52,23 +50,21 @@ while IFS= read -r dir; do
 
         # Validate Terraform configuration
         echo "  🔍 Running terraform validate..."
-        (
+        if (
             cd "$dir"
             terraform init -backend=false -input=false >/dev/null 2>&1
             terraform validate
-        )
-
-        if [ $? -ne 0 ]; then
+        ); then
+            echo "  ✅ Validation successful"
+        else
             echo "  ❌ Validation failed for $dir"
             VALIDATION_FAILED=true
-        else
-            echo "  ✅ Validation successful"
         fi
 
-        # Run TFLint if available
+        # Run TFLint if available (from repository root to use .tflint.hcl config)
         if [ "$TFLINT_AVAILABLE" = true ]; then
             echo "  📋 Running TFLint..."
-            if tflint --chdir="$dir" --format=compact; then
+            if tflint "$dir" --format=compact; then
                 echo "  ✅ TFLint passed"
             else
                 echo "  ❌ TFLint failed"

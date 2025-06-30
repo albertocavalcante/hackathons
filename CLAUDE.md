@@ -156,6 +156,7 @@ pre-commit run --files path/to/file.tf
 - 🤖 **ALWAYS check current date/time with `date` command before referencing years/dates**
 - 🤖 **NEVER default to training cutoff dates - always use machine's current time**
 - 🤖 **MUST use git ls-remote to get commit hashes when updating pre-commit hooks**
+- 🤖 **MUST use git ls-remote to get latest versions when updating TFLint plugins**
 
 **Git Commit Hash Retrieval for Pre-commit Security:**
 
@@ -171,6 +172,20 @@ git ls-remote --tags https://github.com/keith/pre-commit-buildifier.git | tail -
 
 # Format: commit_hash refs/tags/version
 # Use: rev: commit_hash  # version (in .pre-commit-config.yaml)
+```
+
+**TFLint Plugin Version Updates:**
+
+```bash
+# Get latest versions for TFLint plugins (use version numbers directly in .tflint.hcl)
+git ls-remote --tags https://github.com/terraform-linters/tflint-ruleset-aws.git | grep -E "refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$" | sed 's/.*refs\/tags\/v//' | sort -V | tail -5
+
+git ls-remote --tags https://github.com/terraform-linters/tflint-ruleset-google.git | grep -E "refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$" | sed 's/.*refs\/tags\/v//' | sort -V | tail -5
+
+git ls-remote --tags https://github.com/terraform-linters/tflint-ruleset-azurerm.git | grep -E "refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$" | sed 's/.*refs\/tags\/v//' | sort -V | tail -5
+
+# Usage: Update version numbers in .tflint.hcl file
+# Example: version = "0.40.0" (use latest from command output)
 ```
 
 ### Secrets Management

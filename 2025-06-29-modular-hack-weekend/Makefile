@@ -79,10 +79,8 @@ cloud-status: ## Check Terraform Cloud authentication status
 	@echo "🔍 Checking Terraform Cloud authentication..."
 	@if [ -f ~/.terraform.d/credentials.tfrc.json ]; then \
 		echo "✅ Terraform Cloud credentials file found at ~/.terraform.d/credentials.tfrc.json"; \
-		echo "File contents:"; \
-		cat ~/.terraform.d/credentials.tfrc.json; \
-		echo ""; \
 		echo "File permissions: $$(ls -la ~/.terraform.d/credentials.tfrc.json)"; \
+		echo "File size: $$(du -h ~/.terraform.d/credentials.tfrc.json | cut -f1)"; \
 	else \
 		echo "❌ Terraform Cloud credentials not found"; \
 		echo "Run 'make cloud-login' to authenticate"; \
@@ -249,5 +247,5 @@ cloud-workspace: ## Show Terraform Cloud workspace information
 # Emergency stop
 emergency-stop: ## Emergency stop - destroy everything immediately
 	@echo "🚨 EMERGENCY STOP - Destroying all resources immediately!"
-	$(TERRAFORM) destroy -auto-approve
+	cd $(TERRAFORM_DIR) && $(TERRAFORM) destroy -auto-approve
 	@$(MAKE) clean

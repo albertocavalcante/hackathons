@@ -3,11 +3,11 @@
 
 locals {
   # Check if existing key exists and matches our public key
-  existing_key_matches = try(data.lambdalabs_ssh_key.existing_key.public_key == var.ssh_public_key, false)
+  existing_key_matches = try(data.lambdalabs_ssh_key.existing_key[0].public_key == var.ssh_public_key, false)
   should_create_key    = !local.existing_key_matches
 
   # Choose which SSH key ID to use (existing or new)
-  ssh_key_name = local.existing_key_matches ? data.lambdalabs_ssh_key.existing_key.name : var.ssh_key_name
+  ssh_key_name = local.existing_key_matches ? data.lambdalabs_ssh_key.existing_key[0].name : var.ssh_key_name
 
   # Startup script for GPU instance configuration
   startup_script = <<-EOF

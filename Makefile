@@ -1,7 +1,7 @@
 # Makefile for Hackathons Mono Repository
 # Development setup and quality assurance
 
-.PHONY: help setup install-hooks run-hooks validate-all format-all lint-all clean
+.PHONY: help setup install-hooks run-hooks validate-all format-all lint-all clean terraform-validate terraform-format terraform-lint actions-validate security-scan modular-hackathon update-hooks dev-setup ci-simulation check-tools
 
 # Default target
 help: ## Show this help message
@@ -76,10 +76,10 @@ lint-all: ## Run all linting tools
 # Terraform-specific targets
 terraform-validate: ## Validate all Terraform configurations
 	@echo "🔍 Validating Terraform configurations..."
-	@for dir in $$(find . -name "*.tf" -type f -exec dirname {} \; | sort -u); do \
+	@for dir in $$(find . -name ".terraform" -type d -prune -o -name "*.tf" -type f -exec dirname {} \; | sort -u); do \
 		if [ -f "$$dir/providers.tf" ] || [ -f "$$dir/main.tf" ]; then \
 			echo "Validating $$dir..."; \
-			cd "$$dir" && terraform validate; \
+			cd "$$dir" && terraform init -backend=false -input=false >/dev/null 2>&1 && terraform validate; \
 			cd - > /dev/null; \
 		fi; \
 	done
@@ -90,11 +90,12 @@ terraform-format: ## Format all Terraform files
 
 terraform-lint: ## Run TFLint on all Terraform directories
 	@echo "🔍 Running TFLint..."
-	@for dir in $$(find . -name "*.tf" -type f -exec dirname {} \; | sort -u); do \
+	@for dir in $$(find . -name ".terraform" -type d -prune -o -name "*.tf" -type f -exec dirname {} \; | sort -u); do \
 		if [ -f "$$dir/providers.tf" ] || [ -f "$$dir/main.tf" ]; then \
 			echo "Linting $$dir..."; \
-			cd "$$dir" && tflint; \
+			cd "$$dir" && terraform init -backend=false -input=false >/dev/null 2>&1; \
 			cd - > /dev/null; \
+			tflint "$$dir"; \
 		fi; \
 	done
 

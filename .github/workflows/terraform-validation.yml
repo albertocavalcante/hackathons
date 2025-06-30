@@ -52,8 +52,8 @@ jobs:
     - name: Find all Terraform directories
       id: find-dirs
       run: |
-        # Find all directories containing .tf files
-        TERRAFORM_DIRS=$(find . -name "*.tf" -type f -print0 | xargs -0 -I {} dirname {} | sort -u | grep -v '^\.$' || true)
+        # Find all directories containing .tf files, excluding .terraform vendor directories
+        TERRAFORM_DIRS=$(find . -name ".terraform" -type d -prune -o -name "*.tf" -type f -print0 | xargs -0 -I {} dirname {} | sort -u | grep -v '^\.$' || true)
         echo "Found Terraform directories:"
         echo "$TERRAFORM_DIRS"
 
@@ -80,8 +80,8 @@ jobs:
           if [ -n "$dir" ] && [ -d "$dir" ]; then
             echo "📁 Linting directory: $dir"
 
-            # Run TFLint for each directory
-            if tflint --chdir="$dir"; then
+            # Run TFLint for each directory from repository root to use .tflint.hcl config
+            if tflint "$dir"; then
               echo "✅ TFLint passed for $dir"
             else
               echo "❌ TFLint failed for $dir"
