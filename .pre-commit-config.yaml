@@ -1,0 +1,175 @@
+# Pre-commit hooks for hackathons mono repository
+# Security-focused configuration with commit hash pinning (2025 best practices)
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+# Update hashes: pre-commit autoupdate --freeze
+
+repos:
+  # General code quality - Official pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b  # v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: \.md$
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: ['--unsafe']  # Allow custom YAML tags
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: check-illegal-windows-names  # New in v5.0.0
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+
+  # Terraform security and quality - Most trusted Terraform pre-commit hooks
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: 2f8bda194a420ad77a050a9de627d77a74841fdc  # v1.99.4
+    hooks:
+      - id: terraform_fmt
+        args:
+          - --args=-recursive
+          - --args=-diff
+      - id: terraform_validate
+        args:
+          - --hook-config=--retry-once-with-cleanup=true
+      - id: terraform_tflint
+        args:
+          - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
+      - id: terraform_checkov
+        args:
+          - --args=--quiet
+          - --args=--skip-check CKV2_GHA_1  # Skip GitHub Actions specific checks
+
+  # GitHub Actions workflow validation - Direct from actionlint official repo
+  - repo: https://github.com/rhysd/actionlint
+    rev: 03d0035246f3e81f36aed592ffb4bebf33a03106  # v1.7.7
+    hooks:
+      - id: actionlint
+
+  # Advanced secret detection - TruffleHog (industry standard)
+  - repo: https://github.com/trufflesecurity/trufflehog
+    rev: fe5624c70923355128868cffd647b6e2cfe11443  # v3.81.9
+    hooks:
+      - id: trufflehog
+        name: TruffleHog OSS
+        description: Detect secrets in your data.
+        entry: trufflehog git file://. --since-commit HEAD --only-verified --fail
+        language: golang
+        stages: [pre-commit, pre-push, manual]
+        pass_filenames: false
+
+  # Lightweight secret detection - Gitleaks (fast backup scanner)
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: fdb44522d34ace953737f8501287e0b4fba52887  # v8.23.1
+    hooks:
+      - id: gitleaks
+        name: Gitleaks
+        description: Detect and prevent secrets in git repos
+        entry: gitleaks protect --verbose --redact --staged
+        language: golang
+        stages: [pre-commit]
+
+  # Bazel/Starlark code quality (for MODULE.bazel and BUILD files)
+  - repo: https://github.com/keith/pre-commit-buildifier
+    rev: 0040bb21f9f4b1ab5d825b70e93e0dd3fde9d7e6  # 8.2.0
+    hooks:
+      - id: buildifier
+        name: Buildifier (format)
+        description: Format Bazel BUILD, WORKSPACE, and .bzl files
+        args: [-mode=fix]
+      - id: buildifier-lint
+        name: Buildifier (lint)
+        description: Lint Bazel BUILD, WORKSPACE, and .bzl files
+        args: [-mode=fix, -lint=warn]
+
+  # Typo detection across all text files
+  - repo: https://github.com/crate-ci/typos
+    rev: fe2508b1ba503e997041e07b7ff07d461620a39d  # v1.13.21
+    hooks:
+      - id: typos
+        name: Typos
+        description: Check for common typos in text files
+        exclude: |
+          (?x)^(
+            \.git/.*|
+            \.terraform/.*|
+            \.secrets\.baseline$|
+            .*\.tfstate.*|
+            node_modules/.*
+          )
+
+  # YAML formatting and validation
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: fc260393cc4ec09f8fc0a5ba4437f481c8b55dc1  # v3.1.0
+    hooks:
+      - id: prettier
+        types: [yaml]
+        exclude: |
+          (?x)^(
+            \.github/workflows/.*\.yml$|
+            \.pre-commit-config\.yaml$
+          )
+        additional_dependencies:
+          - prettier@3.1.0
+
+  # Enhanced commit message conventions (optional but recommended)
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: fab5c5e24176c24acead816fe9645b63289b7e93  # v3.8.0
+    hooks:
+      - id: commitizen
+        name: Commitizen
+        description: Check commit message follows conventional commits
+        stages: [commit-msg]
+
+  # Markdown linting and formatting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: f295829140d25717bc79368d3f966fc1f67a824f  # v0.42.0
+    hooks:
+      - id: markdownlint
+        args: ['--fix', '--disable', 'MD013', 'MD033', 'MD041']  # Disable line length, HTML, first line rules
+        exclude: '^(CHANGELOG|LICENSE|node_modules)'
+
+  # Python code quality (if Python files exist)
+  - repo: https://github.com/psf/black
+    rev: 552baf822992936134cbd31a38f69c8cfe7c0f05  # 24.10.0
+    hooks:
+      - id: black
+        language_version: python3
+        args: ['--line-length=88', '--target-version=py38']
+
+  # Enhanced EditorConfig enforcement
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+    rev: 3bea62898235acc3f05c1d9c33023345f6cd3c6f  # 3.2.1
+    hooks:
+      - id: editorconfig-checker
+        exclude: |
+          (?x)^(
+            \.git/.*|
+            \.terraform/.*|
+            .*\.tfstate.*|
+            .*\.tfplan.*|
+            node_modules/.*|
+            \.secrets\.baseline|
+            LICENSE.*|
+            .*\.code-workspace$|
+            \.github/README\.md$
+          )
+
+  # JSON formatting and validation
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b  # v5.0.0
+    hooks:
+      - id: pretty-format-json
+        args: ['--autofix', '--indent=2']
+        exclude: |
+          (?x)^(
+            \.vscode/.*|
+            package-lock\.json$|
+            \.secrets\.baseline$
+          )

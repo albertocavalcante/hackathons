@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "../fork-modular"
+		},
+		{
+			"path": "../fork-openai-whisper"
+		},
+		{
+			"path": "../terraform-provider-lambda"
+		},
+		{
+			"path": "../fork-tinygrad"
+		},
+		{
+			"path": "./.."
+		},
+		{
+			"path": "../terraform-provider-lambdalabs"
+		}
+	],
+	"settings": {}
+}

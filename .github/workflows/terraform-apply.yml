@@ -1,0 +1,97 @@
+name: 'Terraform Apply'
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '2025-06-29-modular-hack-weekend/infrastructure/**'
+      - '.github/workflows/terraform-*.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  # Terraform Cloud Configuration
+  TERRAFORM_CLOUD_TOKENS: app.terraform.io=${{ secrets.TF_API_TOKEN }}
+  TF_CLOUD_ORGANIZATION: "alberto"
+  TF_WORKSPACE: "modular-hackathon-jun-2025"
+
+  # Provider Configuration
+  LAMBDALABS_API_KEY: ${{ secrets.LAMBDALABS_API_KEY }}
+
+  # GitHub Actions Configuration
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Project Configuration
+  TERRAFORM_PATH: "2025-06-29-modular-hack-weekend/infrastructure"
+
+jobs:
+  terraform-apply:
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Terraform fmt check
+      uses: dflook/terraform-github-actions/terraform-fmt-check@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      with:
+        path: ${{ env.TERRAFORM_PATH }}
+
+    - name: Terraform validate
+      uses: dflook/terraform-github-actions/terraform-validate@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      with:
+        path: ${{ env.TERRAFORM_PATH }}
+
+    - name: Terraform apply
+      id: apply
+      uses: dflook/terraform-github-actions/terraform-apply@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      with:
+        path: ${{ env.TERRAFORM_PATH }}
+        workspace: ${{ env.TF_WORKSPACE }}
+
+    - name: Get Terraform outputs
+      id: output
+      uses: dflook/terraform-github-actions/terraform-output@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      with:
+        path: ${{ env.TERRAFORM_PATH }}
+        workspace: ${{ env.TF_WORKSPACE }}
+
+    - name: Comment Results
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const output = `### 🚀 Infrastructure Deployed Successfully!
+
+          **Instance Details:**
+          - **IP**: ${{ steps.output.outputs.instance_ip }}
+          - **ID**: ${{ steps.output.outputs.instance_id }}
+          - **Type**: ${{ steps.output.outputs.instance_type }}
+
+          **Next Steps:**
+          \`\`\`bash
+          # Connect to instance
+          cd 2025-06-29-modular-hack-weekend
+          make ssh
+
+          # Monitor status
+          make status
+
+          # When done, clean up resources
+          make destroy
+          \`\`\`
+
+          💰 **Remember**: Destroy resources when not in use to avoid charges!
+          `;
+
+          github.rest.repos.createCommitComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha: context.sha,
+            body: output
+          });

@@ -1,0 +1,94 @@
+# Gitleaks configuration for hackathons mono repository
+# See: https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
+
+title = "Hackathons Security Configuration"
+
+# Global settings
+[extend]
+# Use default gitleaks configuration as base
+useDefault = true
+
+# File and path exclusions
+[allowlist]
+description = "Allowlist for known safe patterns and files"
+
+# Exclude common false positives
+paths = [
+    '''^\.git/''',
+    '''^\.terraform/''',
+    '''^.*\.tfstate.*$''',
+    '''^.*\.tfplan.*$''',
+    '''^node_modules/''',
+    '''^\.secrets\.baseline$''',
+    '''^\.pre-commit-config\.yaml$''',
+    '''^SETUP\.md$''',
+    '''^CLAUDE\.md$''',
+    '''test/fixtures/''',
+    '''\.example$''',
+]
+
+# Commit patterns to ignore (e.g., example configurations)
+commits = [
+    '''Example''',
+    '''example''',
+    '''EXAMPLE''',
+    '''placeholder''',
+    '''PLACEHOLDER''',
+    '''TODO''',
+    '''CHANGEME''',
+]
+
+# Regex patterns for secrets that are safe/expected
+regexes = [
+    '''password.*=.*["\']?\$\{.*\}["\']?''',  # Environment variable references
+    '''api_key.*=.*["\']?\$\{.*\}["\']?''',   # Environment variable references
+    '''secret.*=.*["\']?\$\{.*\}["\']?''',    # Environment variable references
+    '''your-.*-key''',                        # Placeholder patterns
+    '''INSERT_.*_HERE''',                     # Placeholder patterns
+    '''REPLACE_.*_HERE''',                    # Placeholder patterns
+    '''example\.com''',                       # Example domains
+    '''localhost''',                          # Local development
+    '''127\.0\.0\.1''',                       # Local development
+    '''LAMBDALABS_API_KEY''',                 # Environment variable name (not value)
+    '''TF_API_TOKEN''',                       # Environment variable name (not value)
+    '''secrets\..*''',                        # GitHub secrets references
+    '''app\.terraform\.io''',                 # Terraform Cloud hostname
+]
+
+# Custom rules for specific secret types
+[[rules]]
+id = "terraform-cloud-token"
+description = "Terraform Cloud API Token"
+regex = '''(?i)(?:terraform[_-]?cloud[_-]?token|tfe?[_-]?token|tf[_-]?api[_-]?token)[\s=:'"]*([a-zA-Z0-9]{14}\.atlasv1\.[a-zA-Z0-9_-]{64,})'''
+secretGroup = 1
+keywords = ["terraform", "tfe", "atlasv1"]
+
+[[rules]]
+id = "lambda-cloud-api-key"
+description = "Lambda Cloud API Key"
+regex = '''(?i)(?:lambda[_-]?cloud[_-]?api[_-]?key|lambdalabs[_-]?api[_-]?key)[\s=:'"]*([a-fA-F0-9]{32,64})'''
+secretGroup = 1
+keywords = ["lambda", "lambdalabs"]
+
+[[rules]]
+id = "github-personal-access-token"
+description = "GitHub Personal Access Token"
+regex = '''gh[pousr]_[A-Za-z0-9_]{36,255}'''
+keywords = ["github", "token", "ghp_", "gho_", "ghu_", "ghs_", "ghr_"]
+
+# Enhanced entropy detection
+[[rules]]
+id = "high-entropy-base64"
+description = "High entropy base64 string"
+regex = '''(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?'''
+entropy = 4.3
+secretGroup = 0
+keywords = ["password", "secret", "key", "token", "api"]
+
+[[rules]]
+id = "high-entropy-hex"
+description = "High entropy hex string"
+regex = '''[a-fA-F0-9]{32,}'''
+entropy = 3.5
+secretGroup = 0
+keywords = ["password", "secret", "key", "token", "api"]

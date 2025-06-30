@@ -1,0 +1,161 @@
+name: 'Terraform Validation'
+
+on:
+  pull_request:
+    paths:
+      - '**/*.tf'
+      - '**/*.tfvars'
+      - '**/*.tfvars.example'
+      - '.github/workflows/terraform-*.yml'
+      - '.tflint.hcl'
+  push:
+    branches: [main]
+    paths:
+      - '**/*.tf'
+      - '**/*.tfvars'
+      - '**/*.tfvars.example'
+      - '.github/workflows/terraform-*.yml'
+      - '.tflint.hcl'
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  # Project Configuration
+  TERRAFORM_PATH: "2025-06-29-modular-hack-weekend/infrastructure"
+
+jobs:
+  terraform-validation:
+    name: 'Terraform Validation'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Cache TFLint plugins
+      uses: actions/cache@v4
+      with:
+        path: ~/.tflint.d/plugins
+        key: ${{ runner.os }}-tflint-${{ hashFiles('.tflint.hcl') }}
+
+    - name: Setup TFLint
+      uses: terraform-linters/setup-tflint@v4
+      with:
+        tflint_version: latest
+
+    - name: Initialize TFLint
+      run: tflint --init
+
+    - name: Find all Terraform directories
+      id: find-dirs
+      run: |
+        # Find all directories containing .tf files, excluding .terraform vendor directories
+        TERRAFORM_DIRS=$(find . -name ".terraform" -type d -prune -o -name "*.tf" -type f -print0 | xargs -0 -I {} dirname {} | sort -u | grep -v '^\.$' || true)
+        echo "Found Terraform directories:"
+        echo "$TERRAFORM_DIRS"
+
+        # Convert to JSON array for matrix strategy
+        DIRS_JSON=$(echo "$TERRAFORM_DIRS" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+        echo "terraform_dirs=$DIRS_JSON" >> "$GITHUB_OUTPUT"
+
+    - name: Terraform Format Check (dflook)
+      uses: dflook/terraform-github-actions/terraform-fmt-check@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      with:
+        path: ${{ env.TERRAFORM_PATH }}
+
+    - name: Terraform Validate (dflook)
+      uses: dflook/terraform-github-actions/terraform-validate@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      with:
+        path: ${{ env.TERRAFORM_PATH }}
+
+    - name: Run TFLint on all directories
+      run: |
+        echo "🔍 Running TFLint on all Terraform directories..."
+        TFLINT_FAILED=false
+
+        while IFS= read -r dir; do
+          if [ -n "$dir" ] && [ -d "$dir" ]; then
+            echo "📁 Linting directory: $dir"
+
+            # Run TFLint using --chdir and --config to use root .tflint.hcl config
+            if tflint --chdir="$dir" --config="$(realpath .tflint.hcl)"; then
+              echo "✅ TFLint passed for $dir"
+            else
+              echo "❌ TFLint failed for $dir"
+              TFLINT_FAILED=true
+            fi
+            echo ""
+          fi
+        done <<< "$(echo '${{ steps.find-dirs.outputs.terraform_dirs }}' | jq -r '.[]')"
+
+        if [ "$TFLINT_FAILED" = true ]; then
+          echo "❌ TFLint found issues in one or more directories"
+          exit 1
+        fi
+
+        echo "✅ TFLint passed for all directories"
+
+    - name: Run Trivy security scan
+      uses: aquasecurity/trivy-action@76071ef0d7ec797419534a183b498b4d6366cf37 # 0.31.0
+      with:
+        scan-type: 'config'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        severity: 'CRITICAL,HIGH,MEDIUM'
+        exit-code: '1'
+      env:
+        TRIVY_CONFIG_FORMAT: 'json'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Run Trivy scan with custom output for PR comments
+      uses: aquasecurity/trivy-action@76071ef0d7ec797419534a183b498b4d6366cf37 # 0.31.0
+      with:
+        scan-type: 'config'
+        scan-ref: '.'
+        format: 'table'
+        severity: 'CRITICAL,HIGH,MEDIUM'
+        exit-code: '0'
+      env:
+        TRIVY_CONFIG_FORMAT: 'json'
+
+
+    - name: Generate validation summary
+      if: always()
+      run: |
+        {
+          echo "## 📋 Terraform Validation Summary"
+          echo ""
+          echo "| Check | Status |"
+          echo "|-------|--------|"
+
+          # Check individual step outcomes
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "| Format Check (dflook) | ✅ Passed |"
+            echo "| Validation (dflook) | ✅ Passed |"
+            echo "| TFLint Analysis | ✅ Passed |"
+            echo "| Security Scan (Trivy) | ✅ Passed |"
+          else
+            echo "| Format Check (dflook) | ❌ Failed |"
+            echo "| Validation (dflook) | ❌ Failed |"
+            echo "| TFLint Analysis | ❌ Failed |"
+            echo "| Security Scan (Trivy) | ❌ Failed |"
+          fi
+
+          echo ""
+          echo "### 🎯 Validated Directories:"
+          echo '${{ steps.find-dirs.outputs.terraform_dirs }}' | jq -r '.[]' | sed 's/^/- /'
+          echo ""
+          echo "### 🔍 Validation Tools Used:"
+          echo "- **dflook actions**: Format checking and Terraform validation"
+          echo "- **TFLint**: Comprehensive linting and best practices"
+          echo "- **Trivy**: Security scanning and misconfiguration detection"
+        } >> "$GITHUB_STEP_SUMMARY"

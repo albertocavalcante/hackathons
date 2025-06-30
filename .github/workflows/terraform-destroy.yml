@@ -1,0 +1,86 @@
+name: 'Terraform Destroy'
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_destroy:
+        description: 'Type "DESTROY" to confirm resource destruction'
+        required: true
+        default: ''
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  # Terraform Cloud Configuration
+  TERRAFORM_CLOUD_TOKENS: app.terraform.io=${{ secrets.TF_API_TOKEN }}
+  TF_CLOUD_ORGANIZATION: "alberto"
+  TF_WORKSPACE: "modular-hackathon-jun-2025"
+
+  # Provider Configuration
+  LAMBDALABS_API_KEY: ${{ secrets.LAMBDALABS_API_KEY }}
+
+  # GitHub Actions Configuration
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Project Configuration
+  TERRAFORM_PATH: "2025-06-29-modular-hack-weekend/infrastructure"
+
+jobs:
+  terraform-destroy:
+    name: 'Terraform Destroy'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Validate Confirmation
+      run: |
+        if [ "${{ github.event.inputs.confirm_destroy }}" != "DESTROY" ]; then
+          echo "❌ Destruction not confirmed. Please type 'DESTROY' to proceed."
+          exit 1
+        fi
+        echo "✅ Destruction confirmed. Proceeding..."
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Terraform fmt check
+      uses: dflook/terraform-github-actions/terraform-fmt-check@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      with:
+        path: ${{ env.TERRAFORM_PATH }}
+
+    - name: Terraform validate
+      uses: dflook/terraform-github-actions/terraform-validate@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      with:
+        path: ${{ env.TERRAFORM_PATH }}
+        workspace: ${{ env.TF_WORKSPACE }}
+
+    - name: Terraform destroy
+      uses: dflook/terraform-github-actions/terraform-destroy@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      with:
+        path: ${{ env.TERRAFORM_PATH }}
+        workspace: ${{ env.TF_WORKSPACE }}
+
+    - name: Comment Results
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const output = `### 🔥 Infrastructure Destroyed Successfully!
+
+          All Lambda Cloud GPU resources have been destroyed.
+
+          **Cost Impact**: Billing has stopped for all provisioned resources.
+
+          **Next Steps**:
+          - Resources can be re-deployed via PR merge to main branch
+          - Check Lambda Cloud console to verify resource cleanup
+          `;
+
+          github.rest.repos.createCommitComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha: context.sha,
+            body: output
+          });
