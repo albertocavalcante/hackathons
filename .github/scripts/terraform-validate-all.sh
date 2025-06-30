@@ -64,7 +64,7 @@ while IFS= read -r dir; do
         # Run TFLint if available (from repository root to use .tflint.hcl config)
         if [ "$TFLINT_AVAILABLE" = true ]; then
             echo "  📋 Running TFLint..."
-            if tflint "$dir" --format=compact; then
+            if tflint --chdir="$dir" --config="$(realpath .tflint.hcl)" --format=compact; then
                 echo "  ✅ TFLint passed"
             else
                 echo "  ❌ TFLint failed"

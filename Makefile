@@ -95,7 +95,7 @@ terraform-lint: ## Run TFLint on all Terraform directories
 			echo "Linting $$dir..."; \
 			cd "$$dir" && terraform init -backend=false -input=false >/dev/null 2>&1; \
 			cd - > /dev/null; \
-			tflint "$$dir"; \
+			tflint --chdir="$$dir" --config="$$(realpath .tflint.hcl)"; \
 		fi; \
 	done
 

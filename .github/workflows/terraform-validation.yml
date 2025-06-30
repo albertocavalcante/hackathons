@@ -80,8 +80,8 @@ jobs:
           if [ -n "$dir" ] && [ -d "$dir" ]; then
             echo "📁 Linting directory: $dir"
 
-            # Run TFLint for each directory from repository root to use .tflint.hcl config
-            if tflint "$dir"; then
+            # Run TFLint using --chdir and --config to use root .tflint.hcl config
+            if tflint --chdir="$dir" --config="$(realpath .tflint.hcl)"; then
               echo "✅ TFLint passed for $dir"
             else
               echo "❌ TFLint failed for $dir"
