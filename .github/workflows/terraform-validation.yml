@@ -57,23 +57,12 @@ jobs:
         DIRS_JSON=$(echo "$TERRAFORM_DIRS" | jq -R -s -c 'split("\n") | map(select(length > 0))')
         echo "terraform_dirs=$DIRS_JSON" >> "$GITHUB_OUTPUT"
 
-    - name: Global Terraform Format Check
-      run: |
-        echo "🔍 Checking Terraform format across all files..."
-        FORMAT_ISSUES=$(terraform fmt -check -recursive . 2>&1 || true)
-        
-        if [ -n "$FORMAT_ISSUES" ]; then
-          echo "❌ Terraform format issues found:"
-          echo "$FORMAT_ISSUES"
-          echo ""
-          echo "💡 To fix these issues, run:"
-          echo "terraform fmt -recursive ."
-          exit 1
-        else
-          echo "✅ All Terraform files are properly formatted"
-        fi
+    - name: Terraform Format Check (dflook)
+      uses: dflook/terraform-github-actions/terraform-fmt-check@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      with:
+        path: 2025-06-29-modular-hack-weekend/infrastructure
 
-    - name: Validate Terraform configurations
+    - name: Terraform Validate (dflook)
       uses: dflook/terraform-github-actions/terraform-validate@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
       with:
         path: 2025-06-29-modular-hack-weekend/infrastructure
@@ -105,41 +94,35 @@ jobs:
         
         echo "✅ TFLint passed for all directories"
 
-    - name: Check for sensitive data
-      run: |
-        echo "🔍 Checking for potential sensitive data in Terraform files..."
-        
-        # Check for common sensitive patterns
-        SENSITIVE_PATTERNS=(
-          "password\s*=\s*[\"'][^\"']*[\"']"
-          "secret\s*=\s*[\"'][^\"']*[\"']"
-          "api_key\s*=\s*[\"'][^\"']*[\"']"
-          "token\s*=\s*[\"'][^\"']*[\"']"
-          "private_key\s*=\s*[\"'][^\"']*[\"']"
-          "access_key\s*=\s*[\"'][^\"']*[\"']"
-          "secret_key\s*=\s*[\"'][^\"']*[\"']"
-        )
-        
-        SENSITIVE_FOUND=false
-        
-        for pattern in "${SENSITIVE_PATTERNS[@]}"; do
-          MATCHES=$(grep -r -i -E "$pattern" . --include="*.tf" --include="*.tfvars" || true)
-          
-          if [ -n "$MATCHES" ]; then
-            echo "⚠️ Potential sensitive data found (pattern: $pattern):"
-            echo "$MATCHES"
-            echo ""
-            SENSITIVE_FOUND=true
-          fi
-        done
-        
-        if [ "$SENSITIVE_FOUND" = true ]; then
-          echo "❌ Potential sensitive data detected in Terraform files"
-          echo "💡 Use variables, environment variables, or secret management instead"
-          exit 1
-        else
-          echo "✅ No sensitive data patterns detected"
-        fi
+    - name: Run Trivy security scan
+      uses: aquasecurity/trivy-action@76071ef0d7ec797419534a183b498b4d6366cf37 # 0.31.0
+      with:
+        scan-type: 'config'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        severity: 'CRITICAL,HIGH,MEDIUM'
+        exit-code: '1'
+      env:
+        TRIVY_CONFIG_FORMAT: 'json'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Run Trivy scan with custom output for PR comments
+      uses: aquasecurity/trivy-action@76071ef0d7ec797419534a183b498b4d6366cf37 # 0.31.0
+      with:
+        scan-type: 'config'
+        scan-ref: '.'
+        format: 'table'
+        severity: 'CRITICAL,HIGH,MEDIUM'
+        exit-code: '0'
+      env:
+        TRIVY_CONFIG_FORMAT: 'json'
+
 
     - name: Generate validation summary
       if: always()
@@ -152,20 +135,23 @@ jobs:
           
           # Check individual step outcomes
           if [ "${{ job.status }}" = "success" ]; then
-            echo "| Format Check | ✅ Passed |"
-            echo "| Validation | ✅ Passed |"
-            echo "| TFLint | ✅ Passed |"
-            echo "| Security Scan | ✅ Passed |"
-            echo "| Naming Conventions | ✅ Checked |"
+            echo "| Format Check (dflook) | ✅ Passed |"
+            echo "| Validation (dflook) | ✅ Passed |"
+            echo "| TFLint Analysis | ✅ Passed |"
+            echo "| Security Scan (Trivy) | ✅ Passed |"
           else
-            echo "| Format Check | ❌ Failed |"
-            echo "| Validation | ❌ Failed |"
-            echo "| TFLint | ❌ Failed |"
-            echo "| Security Scan | ❌ Failed |"
-            echo "| Naming Conventions | ❌ Failed |"
+            echo "| Format Check (dflook) | ❌ Failed |"
+            echo "| Validation (dflook) | ❌ Failed |"
+            echo "| TFLint Analysis | ❌ Failed |"
+            echo "| Security Scan (Trivy) | ❌ Failed |"
           fi
           
           echo ""
           echo "### 🎯 Validated Directories:"
+          echo '${{ steps.find-dirs.outputs.terraform_dirs }}' | jq -r '.[]' | sed 's/^/- /'
+          echo ""
+          echo "### 🔍 Validation Tools Used:"
+          echo "- **dflook actions**: Format checking and Terraform validation"
+          echo "- **TFLint**: Comprehensive linting and best practices"
+          echo "- **Trivy**: Security scanning and misconfiguration detection"
         } >> "$GITHUB_STEP_SUMMARY"
-        echo '${{ steps.find-dirs.outputs.terraform_dirs }}' | jq -r '.[]' | sed 's/^/- /' >> "$GITHUB_STEP_SUMMARY"
