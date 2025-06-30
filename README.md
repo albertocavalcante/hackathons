@@ -2,80 +2,67 @@
 
 A centralized workspace for AI/ML hackathons, competitions, and experimental projects. Each event is organized in dated directories with self-contained infrastructure and documentation.
 
-## 🎯 Active Projects
-
-### 🚀 [Modular AI Hackathon (June 29, 2025)](./2025-06-29-modular-hack-weekend/)
-
-Modular Platform, MAX inference, Mojo programming, cloud GPU infrastructure
-
----
-
-## 🏗️ Repository Structure
+## Repository Structure
 
 ```text
 hackathons/
-├── .github/workflows/           # CI/CD with Terraform validation
-├── 2025-06-29-modular-hack-weekend/    # Current hackathon project
-├── CLAUDE.md                   # Development guidance for Claude Code
-└── README.md                   # This file
+├── .github/workflows/              # CI/CD automation (GitHub requirement)
+├── .github/scripts/                # Shared automation scripts
+├── 2025-06-29-modular-hack-weekend/ # Modular AI hackathon project
+├── CLAUDE.md                       # Development guidance for AI tools
+├── .gitattributes                  # Merge strategies for seamless rebases
+├── .gitconfig                      # Enhanced git configuration
+└── README.md                       # This file
 ```
 
-## 🛠️ Workspace Integration
+> **Note**: GitHub workflows are located at the repository root because GitHub only supports workflows in `.github/workflows/` regardless of mono repository structure.
 
-This mono repository works with external forks and dependencies through VS Code multi-root workspaces. Each hackathon project includes a `.code-workspace` file that integrates:
+## Projects
 
-- **This mono repository**: Central organization and infrastructure
-- **External forks**: Project-specific technology repositories
-- **Common patterns**: Shared automation and documentation structure
+### 2025-06-29-modular-hack-weekend
+Modular Platform hackathon focusing on MAX inference, Mojo programming, and cloud GPU infrastructure. See [project README](./2025-06-29-modular-hack-weekend/README.md) for details.
 
-The workspace approach enables coordinated development across multiple related repositories while maintaining project isolation.
+## Development Workflow
 
-## 📁 Project Organization
+### Getting Started
+1. Navigate to the specific project directory
+2. Read the project's README.md for setup instructions
+3. Use the project's Makefile for automation commands
+4. Open the VS Code workspace file for integrated development
 
-### Directory Naming Convention
+### Adding New Projects
+1. Create directory using format: `YYYY-MM-DD-event-name`
+2. Copy structure from existing project as template
+3. Update project-specific documentation
+4. Add entry to this README
 
-- **Format**: `YYYY-MM-DD-event-name`
-- **Example**: `2025-06-29-modular-hack-weekend`
+### Git Workflow Enhancement
+This repository includes tools for seamless post-squash-merge rebases:
+- **Smart rebase helper**: `.github/scripts/post-squash-rebase.sh`
+- **Makefile command**: `make post-squash-rebase`
+- **Git configuration**: Enhanced merge strategies and conflict resolution
 
-### Standard Project Structure
+## Workspace Integration
+
+Each project includes a VS Code workspace file that integrates:
+- This mono repository for organization and shared infrastructure
+- External forks and dependencies for project-specific technologies
+- Coordinated development across multiple repositories while maintaining isolation
+
+## Project Organization Standards
 
 ```text
 YYYY-MM-DD-event-name/
-├── README.md                   # Project overview and setup guide
-├── CLAUDE.md                   # Development guidance
-├── Makefile                    # Project automation
-├── infrastructure/             # Terraform infrastructure code
-├── *.code-workspace           # VS Code workspace integration
+├── README.md                    # Project overview and setup
+├── CLAUDE.md                    # AI development guidance
+├── Makefile                     # Project automation
+├── infrastructure/              # Cloud infrastructure code
+├── *.code-workspace            # VS Code workspace integration
 └── (project-specific files)
 ```
 
-## 🚀 Getting Started
-
-1. **Choose a project** from the active projects list above
-2. **Navigate to project directory** and read its README.md
-3. **Open VS Code workspace** for integrated development experience
-4. **Follow project-specific setup** instructions and automation
-
-## 🤝 Contributing
-
-### Adding New Hackathons
-
-1. Create dated directory: `YYYY-MM-DD-event-name`
-2. Copy structure from existing successful project
-3. Update project documentation
-4. Add project link to this README
-
-### Development Workflow
-
-- Each project is self-contained with its own infrastructure
-- Use project-specific Makefiles for automation
-- Follow CI/CD patterns established in `.github/workflows/`
-- Maintain documentation for future reference
-
 ---
 
-**🚀 Ready to start?** Choose a project above and follow its README for complete setup instructions.
-
-**💡 New hackathon?** Create a dated directory and follow the project template structure.
-
-**📚 Need help?** Check project-specific documentation or [CLAUDE.md](./CLAUDE.md) for development guidance.
+**Getting started?** Navigate to a project directory and follow its README.  
+**Adding a project?** Use the dated directory format and project template structure.  
+**Need help?** Check project documentation or [CLAUDE.md](./CLAUDE.md) for development guidance.
