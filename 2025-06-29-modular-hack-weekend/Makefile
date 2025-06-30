@@ -15,6 +15,8 @@ help: ## Show this help message
 	@echo "  LAMBDALABS_API_KEY - Lambda Labs API key (required)"
 	@echo "  TF_VAR_lambda_api_key - Alternative to LAMBDALABS_API_KEY"
 	@echo "  TF_CLOUD_TOKEN - Terraform Cloud API token (required for cloud backend)"
+	@echo "  TF_CLOUD_ORGANIZATION - Automatically set to 'alberto'"
+	@echo "  TF_WORKSPACE - Automatically set to 'modular-hackathon-jun-2025'"
 	@echo ""
 	@echo "Setup Requirements:"
 	@echo "  1. Login to Terraform Cloud: terraform login"
@@ -36,6 +38,10 @@ help: ## Show this help message
 TERRAFORM := terraform
 PLAN_FILE := hackathon.tfplan
 TERRAFORM_DIR := infrastructure
+
+# Environment variables for Terraform Cloud configuration
+export TF_CLOUD_ORGANIZATION := alberto
+export TF_WORKSPACE := modular-hackathon-jun-2025
 
 # Ensure clean terraform environment by unsetting conflicting variables
 export TF_CLI_CONFIG_FILE :=

@@ -3,10 +3,10 @@
 
 terraform {
   cloud {
-    organization = "alberto"
-    workspaces {
-      name = "modular-hackathon-jun-2025"
-    }
+    # Organization and workspace configured via environment variables:
+    # TF_CLOUD_ORGANIZATION = "alberto"
+    # TF_WORKSPACE = "modular-hackathon-jun-2025"
+    # This allows flexible workspace selection in different environments
   }
 
   required_providers {
@@ -17,6 +17,11 @@ terraform {
   }
 
   required_version = ">= 1.1"
+  
+  # Environment variables used:
+  # TF_CLOUD_ORGANIZATION - Terraform Cloud organization name
+  # TF_WORKSPACE - Terraform Cloud workspace name
+  # LAMBDALABS_API_KEY - Lambda Cloud provider authentication
 }
 
 # Configure the Lambda Labs provider

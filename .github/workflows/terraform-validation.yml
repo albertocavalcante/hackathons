@@ -22,6 +22,10 @@ permissions:
   pull-requests: write
   issues: write
 
+env:
+  # Project Configuration
+  TERRAFORM_PATH: "2025-06-29-modular-hack-weekend/infrastructure"
+
 jobs:
   terraform-validation:
     name: 'Terraform Validation'
@@ -60,12 +64,12 @@ jobs:
     - name: Terraform Format Check (dflook)
       uses: dflook/terraform-github-actions/terraform-fmt-check@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
       with:
-        path: 2025-06-29-modular-hack-weekend/infrastructure
+        path: ${{ env.TERRAFORM_PATH }}
 
     - name: Terraform Validate (dflook)
       uses: dflook/terraform-github-actions/terraform-validate@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
       with:
-        path: 2025-06-29-modular-hack-weekend/infrastructure
+        path: ${{ env.TERRAFORM_PATH }}
 
     - name: Run TFLint on all directories
       run: |
