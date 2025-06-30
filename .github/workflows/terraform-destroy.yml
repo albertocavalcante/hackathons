@@ -1,0 +1,84 @@
+name: 'Terraform Destroy'
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_destroy:
+        description: 'Type "DESTROY" to confirm resource destruction'
+        required: true
+        default: ''
+
+defaults:
+  run:
+    working-directory: '2025-06-29-modular-hack-weekend/infrastructure'
+
+jobs:
+  terraform-destroy:
+    name: 'Terraform Destroy'
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - name: Validate Confirmation
+      run: |
+        if [ "${{ github.event.inputs.confirm_destroy }}" != "DESTROY" ]; then
+          echo "❌ Destruction not confirmed. Please type 'DESTROY' to proceed."
+          exit 1
+        fi
+        echo "✅ Destruction confirmed. Proceeding..."
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "~1.0"
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    - name: Setup TFLint
+      uses: terraform-linters/setup-tflint@v4
+      with:
+        tflint_version: latest
+
+    - name: Initialize TFLint
+      run: tflint --init
+
+    - name: Run TFLint
+      run: tflint
+
+    - name: Terraform Format Check
+      run: terraform fmt -check -recursive
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Validate
+      run: terraform validate
+
+    - name: Terraform Destroy
+      run: terraform destroy -auto-approve
+      env:
+        LAMBDALABS_API_KEY: ${{ secrets.LAMBDALABS_API_KEY }}
+
+    - name: Comment Results
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const output = `### 🔥 Infrastructure Destroyed Successfully!
+          
+          All Lambda Cloud GPU resources have been destroyed.
+          
+          **Cost Impact**: Billing has stopped for all provisioned resources.
+          
+          **Next Steps**: 
+          - Resources can be re-deployed via PR merge to main branch
+          - Check Lambda Cloud console to verify resource cleanup
+          `;
+          
+          github.rest.repos.createCommitComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha: context.sha,
+            body: output
+          });

@@ -1,0 +1,7 @@
+"""Hackathons"""
+
+module(
+    name = "hackathons",
+)
+
+bazel_dep(name = "rules_mojo", version = "0.4.1")

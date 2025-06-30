@@ -1,0 +1,103 @@
+name: 'Terraform Apply'
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '2025-06-29-modular-hack-weekend/infrastructure/**'
+      - '.github/workflows/terraform-*.yml'
+
+defaults:
+  run:
+    working-directory: '2025-06-29-modular-hack-weekend/infrastructure'
+
+jobs:
+  terraform-apply:
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "~1.0"
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    - name: Setup TFLint
+      uses: terraform-linters/setup-tflint@v4
+      with:
+        tflint_version: latest
+
+    - name: Initialize TFLint
+      run: tflint --init
+
+    - name: Run TFLint
+      run: tflint
+
+    - name: Terraform Format Check
+      run: terraform fmt -check -recursive
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Validate
+      run: terraform validate
+
+    - name: Terraform Plan
+      id: plan
+      run: terraform plan -out=tfplan
+      env:
+        LAMBDALABS_API_KEY: ${{ secrets.LAMBDALABS_API_KEY }}
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve tfplan
+      env:
+        LAMBDALABS_API_KEY: ${{ secrets.LAMBDALABS_API_KEY }}
+
+    - name: Output Instance Info
+      id: output
+      run: |
+        {
+          echo "instance_ip=$(terraform output -raw instance_ip)"
+          echo "instance_id=$(terraform output -raw instance_id)"
+          echo "instance_type=$(terraform output -raw instance_type)"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Comment Results
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const output = `### 🚀 Infrastructure Deployed Successfully!
+          
+          **Instance Details:**
+          - **IP**: ${{ steps.output.outputs.instance_ip }}
+          - **ID**: ${{ steps.output.outputs.instance_id }}
+          - **Type**: ${{ steps.output.outputs.instance_type }}
+          
+          **Next Steps:**
+          \`\`\`bash
+          # Connect to instance
+          cd 2025-06-29-modular-hack-weekend
+          make ssh
+          
+          # Monitor status
+          make status
+          
+          # When done, clean up resources
+          make destroy
+          \`\`\`
+          
+          💰 **Remember**: Destroy resources when not in use to avoid charges!
+          `;
+          
+          github.rest.repos.createCommitComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha: context.sha,
+            body: output
+          });

@@ -1,0 +1,235 @@
+name: 'Terraform Validation'
+
+on:
+  pull_request:
+    paths:
+      - '**/*.tf'
+      - '**/*.tfvars'
+      - '**/*.tfvars.example'
+      - '.github/workflows/terraform-*.yml'
+      - '.tflint.hcl'
+  push:
+    branches: [main]
+    paths:
+      - '**/*.tf'
+      - '**/*.tfvars'
+      - '**/*.tfvars.example'
+      - '.github/workflows/terraform-*.yml'
+      - '.tflint.hcl'
+
+jobs:
+  terraform-validation:
+    name: 'Terraform Validation'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "~1.0"
+
+    - name: Cache TFLint plugins
+      uses: actions/cache@v4
+      with:
+        path: ~/.tflint.d/plugins
+        key: ${{ runner.os }}-tflint-${{ hashFiles('.tflint.hcl') }}
+
+    - name: Setup TFLint
+      uses: terraform-linters/setup-tflint@v4
+      with:
+        tflint_version: latest
+
+    - name: Initialize TFLint
+      run: tflint --init
+
+    - name: Find all Terraform directories
+      id: find-dirs
+      run: |
+        # Find all directories containing .tf files
+        TERRAFORM_DIRS=$(find . -name "*.tf" -type f -print0 | xargs -0 -I {} dirname {} | sort -u | grep -v '^\.$' || true)
+        echo "Found Terraform directories:"
+        echo "$TERRAFORM_DIRS"
+        
+        # Convert to JSON array for matrix strategy
+        DIRS_JSON=$(echo "$TERRAFORM_DIRS" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+        echo "terraform_dirs=$DIRS_JSON" >> "$GITHUB_OUTPUT"
+
+    - name: Global Terraform Format Check
+      run: |
+        echo "🔍 Checking Terraform format across all files..."
+        FORMAT_ISSUES=$(terraform fmt -check -recursive . 2>&1 || true)
+        
+        if [ -n "$FORMAT_ISSUES" ]; then
+          echo "❌ Terraform format issues found:"
+          echo "$FORMAT_ISSUES"
+          echo ""
+          echo "💡 To fix these issues, run:"
+          echo "terraform fmt -recursive ."
+          exit 1
+        else
+          echo "✅ All Terraform files are properly formatted"
+        fi
+
+    - name: Validate all Terraform directories
+      run: |
+        echo "🔍 Validating all Terraform configurations..."
+        VALIDATION_FAILED=false
+        
+        while IFS= read -r dir; do
+          if [ -n "$dir" ] && [ -d "$dir" ]; then
+            echo "📁 Validating directory: $dir"
+            
+            # Initialize and validate each directory
+            if (
+              cd "$dir"
+              terraform init -backend=false -input=false
+              terraform validate
+            ); then
+              echo "✅ Validation successful for $dir"
+            else
+              echo "❌ Validation failed for $dir"
+              VALIDATION_FAILED=true
+            fi
+            echo ""
+          fi
+        done <<< "$(echo '${{ steps.find-dirs.outputs.terraform_dirs }}' | jq -r '.[]')"
+        
+        if [ "$VALIDATION_FAILED" = true ]; then
+          echo "❌ One or more Terraform configurations failed validation"
+          exit 1
+        fi
+        
+        echo "✅ All Terraform configurations are valid"
+
+    - name: Run TFLint on all directories
+      run: |
+        echo "🔍 Running TFLint on all Terraform directories..."
+        TFLINT_FAILED=false
+        
+        while IFS= read -r dir; do
+          if [ -n "$dir" ] && [ -d "$dir" ]; then
+            echo "📁 Linting directory: $dir"
+            
+            # Run TFLint for each directory
+            if tflint --chdir="$dir"; then
+              echo "✅ TFLint passed for $dir"
+            else
+              echo "❌ TFLint failed for $dir"
+              TFLINT_FAILED=true
+            fi
+            echo ""
+          fi
+        done <<< "$(echo '${{ steps.find-dirs.outputs.terraform_dirs }}' | jq -r '.[]')"
+        
+        if [ "$TFLINT_FAILED" = true ]; then
+          echo "❌ TFLint found issues in one or more directories"
+          exit 1
+        fi
+        
+        echo "✅ TFLint passed for all directories"
+
+    - name: Check for sensitive data
+      run: |
+        echo "🔍 Checking for potential sensitive data in Terraform files..."
+        
+        # Check for common sensitive patterns
+        SENSITIVE_PATTERNS=(
+          "password\s*=\s*[\"'][^\"']*[\"']"
+          "secret\s*=\s*[\"'][^\"']*[\"']"
+          "api_key\s*=\s*[\"'][^\"']*[\"']"
+          "token\s*=\s*[\"'][^\"']*[\"']"
+          "private_key\s*=\s*[\"'][^\"']*[\"']"
+          "access_key\s*=\s*[\"'][^\"']*[\"']"
+          "secret_key\s*=\s*[\"'][^\"']*[\"']"
+        )
+        
+        SENSITIVE_FOUND=false
+        
+        for pattern in "${SENSITIVE_PATTERNS[@]}"; do
+          MATCHES=$(grep -r -i -E "$pattern" . --include="*.tf" --include="*.tfvars" || true)
+          
+          if [ -n "$MATCHES" ]; then
+            echo "⚠️ Potential sensitive data found (pattern: $pattern):"
+            echo "$MATCHES"
+            echo ""
+            SENSITIVE_FOUND=true
+          fi
+        done
+        
+        if [ "$SENSITIVE_FOUND" = true ]; then
+          echo "❌ Potential sensitive data detected in Terraform files"
+          echo "💡 Use variables, environment variables, or secret management instead"
+          exit 1
+        else
+          echo "✅ No sensitive data patterns detected"
+        fi
+
+    - name: Check Terraform file naming conventions
+      run: |
+        echo "🔍 Checking Terraform file naming conventions..."
+        
+        NAMING_ISSUES=false
+        
+        # Check for non-standard file names
+        BAD_NAMES=$(find . -name "*.tf" -type f | grep -E "(terraform|infra|config)\.tf$" || true)
+        
+        if [ -n "$BAD_NAMES" ]; then
+          echo "⚠️ Non-standard Terraform file names found:"
+          echo "$BAD_NAMES"
+          echo ""
+          echo "💡 Consider using standard names like:"
+          echo "  - main.tf (primary resources)"
+          echo "  - variables.tf (input variables)"
+          echo "  - outputs.tf (output values)"
+          echo "  - providers.tf (provider configuration)"
+          echo "  - data.tf (data sources)"
+          echo "  - locals.tf (local values)"
+          NAMING_ISSUES=true
+        fi
+        
+        # Check for overly long file names
+        LONG_NAMES=$(find . -name "*.tf" -type f | awk -F'/' '{print $NF}' | awk 'length($0) > 50' || true)
+        
+        if [ -n "$LONG_NAMES" ]; then
+          echo "⚠️ Overly long Terraform file names found:"
+          echo "$LONG_NAMES"
+          echo ""
+          echo "💡 Consider shorter, more descriptive names"
+          NAMING_ISSUES=true
+        fi
+        
+        if [ "$NAMING_ISSUES" = false ]; then
+          echo "✅ Terraform file naming conventions look good"
+        fi
+
+    - name: Generate validation summary
+      if: always()
+      run: |
+        {
+          echo "## 📋 Terraform Validation Summary"
+          echo ""
+          echo "| Check | Status |"
+          echo "|-------|--------|"
+          
+          # Check individual step outcomes
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "| Format Check | ✅ Passed |"
+            echo "| Validation | ✅ Passed |"
+            echo "| TFLint | ✅ Passed |"
+            echo "| Security Scan | ✅ Passed |"
+            echo "| Naming Conventions | ✅ Checked |"
+          else
+            echo "| Format Check | ❌ Failed |"
+            echo "| Validation | ❌ Failed |"
+            echo "| TFLint | ❌ Failed |"
+            echo "| Security Scan | ❌ Failed |"
+            echo "| Naming Conventions | ❌ Failed |"
+          fi
+          
+          echo ""
+          echo "### 🎯 Validated Directories:"
+        } >> "$GITHUB_STEP_SUMMARY"
+        echo '${{ steps.find-dirs.outputs.terraform_dirs }}' | jq -r '.[]' | sed 's/^/- /' >> "$GITHUB_STEP_SUMMARY"
