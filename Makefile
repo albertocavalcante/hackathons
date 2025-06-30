@@ -1,7 +1,7 @@
 # Makefile for Hackathons Mono Repository
 # Development setup and quality assurance
 
-.PHONY: help setup install-hooks run-hooks validate-all format-all lint-all clean terraform-validate terraform-format terraform-lint actions-validate security-scan modular-hackathon update-hooks dev-setup ci-simulation check-tools
+.PHONY: help setup install-hooks run-hooks validate-all format-all lint-all clean terraform-validate terraform-format terraform-lint actions-validate security-scan modular-hackathon update-hooks dev-setup ci-simulation check-tools post-squash-rebase
 
 # Default target
 help: ## Show this help message
@@ -174,3 +174,8 @@ check-tools: ## Check if required tools are installed
 	@echo "TFLint: $$(tflint --version 2>/dev/null || echo '❌ Not installed')"
 	@echo "actionlint: $$(actionlint --version 2>/dev/null || echo '❌ Not installed')"
 	@echo "detect-secrets: $$(detect-secrets --version 2>/dev/null || echo '❌ Not installed')"
+
+# Git workflow helpers
+post-squash-rebase: ## Handle rebase after squash-merge to main (avoids false conflicts)
+	@echo "🔄 Post-squash merge rebase helper"
+	@./.github/scripts/post-squash-rebase.sh

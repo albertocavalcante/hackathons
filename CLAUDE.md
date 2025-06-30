@@ -249,3 +249,63 @@ git ls-remote --tags https://github.com/terraform-linters/tflint-ruleset-azurerm
 - **External APIs**: Project-specific API integrations
 
 This mono repository structure provides flexibility for diverse hackathon projects while maintaining organization and enabling knowledge sharing across events and experiments.
+
+## Writing & Communication Guidelines
+
+### Tone Regulation (TARS-style Settings)
+
+When writing documentation, code comments, or any text content in this repository, follow these calibrated guidelines:
+
+**Professional Clarity**: 85%
+- Clear, direct, and informative language
+- Focus on practical information and actionable steps
+- Use technical terms appropriately without overexplaining
+
+**Marketing/Enthusiasm**: 15%
+- Light encouragement where appropriate ("Ready to build?")
+- Positive but restrained language
+- Avoid excessive adjectives and hyperbole
+
+**Forbidden Patterns** (0% tolerance):
+- ❌ "Journey", "adventure", "dive deep into"
+- ❌ "Seamless experience", "effortless", "game-changing" 
+- ❌ Excessive exclamation points (max 1 per section)
+- ❌ "Revolutionary", "cutting-edge" (unless factually accurate)
+- ❌ "Let's explore", "embark on", "discover"
+
+**Preferred Patterns**:
+- ✅ "Start with", "Begin by", "Follow these steps"
+- ✅ "This provides", "Enables", "Allows you to"
+- ✅ "See documentation", "Check the guide", "Review the setup"
+- ✅ Direct action verbs: "Install", "Configure", "Deploy"
+
+### Documentation Standards
+
+**Structure Priority**:
+1. **Purpose**: What this does/solves
+2. **Prerequisites**: What you need first  
+3. **Steps**: Clear, numbered instructions
+4. **Reference**: Commands, links, troubleshooting
+
+**Language Guidelines**:
+- Use active voice: "Deploy the infrastructure" not "Infrastructure can be deployed"
+- Be specific: "Run `make help`" not "Use the help command"
+- Lead with action: "Install dependencies" not "Dependencies need to be installed"
+- State facts directly: "This workflow validates Terraform" not "This amazing workflow..."
+
+**Emoji Usage**:
+- **Functional only**: ✅ ❌ (status indicators)
+- **Navigation**: ← → (directional)
+- **Max 2 per section**: For emphasis, not decoration
+- **Never in code blocks or technical content**
+
+### Content Review Checklist
+
+Before finalizing any documentation:
+- [ ] Remove marketing fluff and excessive adjectives
+- [ ] Ensure every sentence serves a practical purpose
+- [ ] Check that instructions are actionable and specific
+- [ ] Verify technical accuracy over stylistic appeal
+- [ ] Confirm the content helps someone accomplish a task
+
+**TARS Compliance Check**: "Is this helpful, clear, and professional without being unnecessarily enthusiastic?"

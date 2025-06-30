@@ -2,20 +2,20 @@
 
 A comprehensive project focusing on Modular AI Platform technologies, MAX inference optimization, Mojo programming, and cloud GPU infrastructure for high-performance AI workloads.
 
-**🏠 [← Back to Hackathons Repository](../README.md)** • **[⚙️ Development Guide](./CLAUDE.md)** • **[🔧 GitHub Actions Setup](../.github/README.md)**
+**[← Back to Hackathons Repository](../README.md)** • **[Development Guide](./CLAUDE.md)**
 
 ---
 
-## 🎯 Project Overview
+## Project Overview
 
 This hackathon explores the integration of cutting-edge AI infrastructure technologies:
 
 ### Core Technologies
 
-- **[Modular Platform](../fork-modular/)**: High-performance AI inference with MAX engine
-- **[Mojo Programming Language](../fork-modular/mojo/)**: Systems programming optimized for AI workloads
-- **[OpenAI Whisper](../fork-openai-whisper/)**: Automatic speech recognition system
-- **[TinyGrad Framework](../fork-tinygrad/)**: Lightweight deep learning framework
+- **Modular Platform**: High-performance AI inference with MAX engine
+- **Mojo Programming Language**: Systems programming optimized for AI workloads  
+- **OpenAI Whisper**: Automatic speech recognition system
+- **TinyGrad Framework**: Lightweight deep learning framework
 - **Lambda Cloud**: GPU infrastructure (A10, A100, H100 instances)
 - **Terraform**: Infrastructure as code with Terraform Cloud backend
 
@@ -28,12 +28,11 @@ This hackathon explores the integration of cutting-edge AI infrastructure techno
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
 1. **Development Tools**:
-
   ```bash
   # Install required tools
   brew install terraform git
@@ -72,7 +71,7 @@ make ssh
 make destroy
 ```
 
-### Quick Commands Reference
+### Essential Commands
 
 ```bash
 make help                    # Show all available commands
@@ -82,37 +81,86 @@ make status                 # Check instance status
 make ssh                    # Connect to GPU instance
 make outputs                # Show connection details
 make destroy                # Clean up all resources
+make emergency-stop         # Immediate resource destruction
 ```
 
 ---
 
-## 🛠️ Technology Stack
+## Infrastructure & CI/CD
 
-### Infrastructure & Cloud
+### Terraform Configuration
 
-- **Cloud GPUs**: Lambda Cloud (A10, A100, H100 instances)
-- **Infrastructure as Code**: Terraform with Terraform Cloud backend
-- **Provider**: [terraform-provider-lambdalabs](../terraform-provider-lambdalabs/)
-- **CI/CD**: GitHub Actions with plan-first workflows
-- **Cost Management**: Automated resource lifecycle management
+The infrastructure is organized in modular Terraform files:
 
-### AI/ML Frameworks
+```text
+infrastructure/
+├── main.tf                 # Entry point and documentation
+├── providers.tf            # Terraform Cloud + Lambda provider config
+├── variables.tf            # Input variables with validation
+├── data.tf                # Data sources (SSH keys, instance types)
+├── locals.tf              # Local values and computed expressions  
+├── resources.tf           # Infrastructure resources (instances, SSH keys)
+├── outputs.tf             # Output values for connection details
+└── terraform.tfvars.example # Example configuration file
+```
 
-- **Modular Platform**: High-performance AI inference with MAX
-- **Mojo**: Systems programming language for AI workloads
-- **OpenAI Whisper**: Automatic speech recognition
-- **TinyGrad**: Lightweight deep learning framework
+**Configuration**:
+- **Remote State**: Managed in Terraform Cloud workspace `modular-hackathon-jun-2025`
+- **Provider**: `elct9620/lambdalabs` for Lambda Cloud resources
+- **Organization**: `alberto` (automatically configured)
 
-### Development Environment
+### GitHub Actions Workflows
 
-- **Build System**: Bazel (via MODULE.bazel)
-- **Environment Management**: Pixi for Python dependencies
-- **Editor**: VS Code with multi-root workspace support
-- **Version Control**: Git with project-specific branching
+The repository includes comprehensive CI/CD automation:
+
+#### 1. Terraform Validation (`terraform-validation.yml`)
+**Triggers**: Pull requests and pushes affecting `*.tf` files
+**Actions**:
+- Format checking with `terraform fmt`
+- Configuration validation with `terraform validate`
+- Security scanning with TFLint (comprehensive rules + cloud provider plugins)
+- Configuration scanning with Trivy
+- Sensitive data detection
+- File naming convention checks
+
+#### 2. Terraform Plan (`terraform-plan.yml`)
+**Triggers**: Manual workflow dispatch
+**Actions**:
+- Generate execution plan
+- Post plan as PR comment for review
+- No automatic application
+
+#### 3. Terraform Apply (`terraform-apply.yml`)
+**Triggers**: Manual workflow dispatch with approval
+**Actions**:
+- Apply approved infrastructure changes
+- Update infrastructure state
+- Requires explicit manual trigger
+
+#### 4. Terraform Destroy (`terraform-destroy.yml`)
+**Triggers**: Manual workflow dispatch with confirmation
+**Actions**:
+- Destroy all infrastructure resources
+- Clean up remote state
+- Requires explicit confirmation
+
+### Security & Validation
+
+**Automated Checks**:
+- **TFLint**: Comprehensive Terraform best practices validation
+- **Format Enforcement**: Consistent code formatting across all files
+- **Security Scanning**: Trivy configuration scanning for misconfigurations
+- **Secret Detection**: Automated detection of potential secrets in code
+- **Provider Validation**: Ensure all required providers are properly configured
+
+**Manual Gates**:
+- Infrastructure changes require manual plan review
+- Resource creation requires explicit apply trigger
+- Resource destruction requires confirmation
 
 ---
 
-## 💰 Cost Management
+## Cost Management
 
 ### GPU Instance Pricing (Lambda Cloud)
 
@@ -138,22 +186,11 @@ make destroy                # Clean up all resources
 
 ---
 
-## 🔧 Development Workflow
+## Development Workflow
 
-### Multi-Project Development
+### Multi-Project Integration
 
-This project integrates with several external repositories in a coordinated workspace:
-
-#### Cross-Repository Integration
-
-1. **Data Flow**: Audio → Whisper (cloud GPU) → Text → MAX/Mojo processing (cloud GPU)
-2. **Infrastructure**: terraform-provider-lambda manages cloud.lambda.ai GPU resources
-3. **Performance Layer**: Mojo kernels optimized for cloud.lambda.ai GPU hardware
-4. **Training Pipeline**: TinyGrad distributed across provisioned GPU instances
-
-#### Workspace Integration
-
-The VS Code workspace (`modular-hackathon.code-workspace`) includes:
+This project coordinates with several external repositories through VS Code workspace:
 
 ```json
 {
@@ -167,29 +204,25 @@ The VS Code workspace (`modular-hackathon.code-workspace`) includes:
 }
 ```
 
-### Essential Commands from Referenced Projects
+### Essential Commands by Technology
 
-#### Modular Platform (fork-modular)
-
+#### Modular Platform
 ```bash
-# Build with Bazel wrapper
 cd ../fork-modular
 ./bazelw build //...
-./bazelw test //...
-
-# MAX server operations
 pip install modular --index-url https://dl.modular.com/public/nightly/python/simple/
 max serve --model-path=modularai/Llama-3.1-8B-Instruct-GGUF
+```
 
-# Mojo development with Pixi
+#### Mojo Development
+```bash
 cd ../fork-modular/mojo
 pixi install
 pixi run mojo format ./
 pixi run test
 ```
 
-#### OpenAI Whisper Integration
-
+#### OpenAI Whisper
 ```bash
 cd ../fork-openai-whisper
 pip install -e .
@@ -197,7 +230,6 @@ python -m pytest tests/
 ```
 
 #### TinyGrad Framework
-
 ```bash
 cd ../fork-tinygrad
 python -m pytest test/
@@ -206,47 +238,9 @@ python examples/mnist.py
 
 ---
 
-## 🏗️ Infrastructure Details
-
-### Terraform Configuration
-
-- **Remote State**: Managed in Terraform Cloud workspace `modular-hackathon-jun-2025`
-- **Provider**: `elct9620/lambdalabs` for Lambda Cloud resources
-- **Organization**: Infrastructure organized in modular `.tf` files
-
-### Terraform Files Structure
-
-```text
-infrastructure/
-├── main.tf                  # Entry point and documentation
-├── providers.tf             # Terraform Cloud + Lambda provider config
-├── variables.tf             # Input variables with validation
-├── data.tf                 # Data sources for external information
-├── locals.tf               # Local values and computed expressions
-├── resources.tf            # Infrastructure resources (instances, SSH keys)
-├── outputs.tf              # Output values for post-deployment use
-└── terraform.tfvars.example # Example configuration file
-```
-
-### CI/CD Integration
-
-- **GitHub Actions**: Automated Terraform validation and deployment
-- **Plan-first workflows**: All infrastructure changes reviewed before deployment
-- **Security scanning**: TFLint and format checking on all Terraform files
-- **Manual approval gates**: Production deployments require explicit approval
-
----
-
-## 🔒 Security & Best Practices
+## Security & Best Practices
 
 ### Credential Management
-
-- **Environment Variables**: Store API keys securely
-- **No Secrets in Git**: Use .gitignore and environment files
-- **Access Controls**: Limit cloud resource permissions
-- **Monitoring**: Track resource usage and access
-
-### Development Security
 
 ```bash
 # Required environment variables
@@ -254,49 +248,22 @@ export LAMBDALABS_API_KEY="your-lambda-cloud-api-key"
 export TF_TOKEN_app_terraform_io="your-terraform-cloud-token"
 
 # Never commit these to version control!
-# They're protected by .gitignore patterns
 ```
 
 ### Infrastructure Security
 
 - **SSH Key Management**: Automated SSH key provisioning and cleanup
-- **Network Security**: Proper firewall rules for cloud instances
-- **Resource Tagging**: Clear identification of resources for cost tracking
+- **Network Security**: Proper firewall rules for cloud instances  
+- **Resource Tagging**: Clear identification for cost tracking
 - **State Security**: Remote state in Terraform Cloud with encryption
 
 ---
 
-## 🔗 Related Resources
-
-### Documentation Links
-
-- **[Modular Platform Documentation](https://docs.modular.com/)**
-- **[Lambda Cloud Documentation](https://docs.lambdalabs.com/)**
-- **[Terraform Cloud Documentation](https://developer.hashicorp.com/terraform/cloud-docs)**
-- **[TFLint Documentation](https://github.com/terraform-linters/tflint)**
-
-### Repository Links
-
-- **[🏠 Hackathons Mono Repo](../README.md)**: Main repository overview
-- **[🤖 Claude Development Guide](./CLAUDE.md)**: Detailed development guidance
-- **[🔧 GitHub Actions Setup](../.github/README.md)**: CI/CD configuration guide
-- **[🛠️ Infrastructure Code](./infrastructure/)**: Terraform configuration files
-
-### External Integrations
-
-- **[fork-modular](../fork-modular/)**: Modular Platform with MAX and Mojo
-- **[fork-openai-whisper](../fork-openai-whisper/)**: Speech recognition system
-- **[terraform-provider-lambdalabs](../terraform-provider-lambdalabs/)**: Infrastructure provider
-- **[fork-tinygrad](../fork-tinygrad/)**: Deep learning framework
-
----
-
-## 🆘 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
 #### Infrastructure Problems
-
 ```bash
 # Check Terraform Cloud authentication
 make cloud-status
@@ -306,13 +273,9 @@ make cloud-fix-auth
 
 # Monitor instance provisioning
 make watch-status
-
-# Get detailed instance information
-make status
 ```
 
 #### Connection Issues
-
 ```bash
 # Verify instance is running
 make status
@@ -320,28 +283,18 @@ make status
 # Get SSH connection details
 make outputs
 
-# Manual SSH command
+# Manual SSH if needed
 ssh -i ~/.sshkeys/hackathons/modular-jun-2025/lambda_gpu_key ubuntu@$(terraform output -raw instance_ip)
 ```
 
 #### Cost Control
-
 ```bash
 # Emergency resource cleanup
 make emergency-stop
 
 # Verify all resources destroyed
 make status
-
-# Check Lambda Cloud dashboard for remaining resources
 ```
-
-### Getting Help
-
-1. **Check Project Documentation**: This README and [CLAUDE.md](./CLAUDE.md)
-2. **Infrastructure Issues**: Use `make status` and cloud provider consoles
-3. **Cost Issues**: Monitor cloud billing and destroy unused resources
-4. **Development Issues**: Refer to CLAUDE.md for debugging guidance
 
 ### Emergency Procedures
 
@@ -351,8 +304,18 @@ make status
 
 ---
 
-**🚀 Ready to build?** Start with `make help` to see all available commands!
+## Related Resources
 
-**💡 Need specific guidance?** Check the [development guide](./CLAUDE.md) for detailed patterns and workflows!
+### Documentation
+- **[Modular Platform Documentation](https://docs.modular.com/)**
+- **[Lambda Cloud Documentation](https://docs.lambdalabs.com/)**
+- **[Terraform Cloud Documentation](https://developer.hashicorp.com/terraform/cloud-docs)**
 
-**🔧 Infrastructure questions?** Review the [GitHub Actions setup](../.github/README.md) for CI/CD details!
+### Repository Links
+- **[Hackathons Mono Repo](../README.md)**: Main repository overview
+- **[Development Guide](./CLAUDE.md)**: Detailed development guidance
+- **[Infrastructure Code](./infrastructure/)**: Terraform configuration files
+
+---
+
+**Ready to build?** Start with `make help` to see all available commands.
