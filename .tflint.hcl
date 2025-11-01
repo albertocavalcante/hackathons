@@ -61,7 +61,7 @@ rule "terraform_workspace_remote" {
 # AWS provider rules (if we add AWS resources later)
 plugin "aws" {
   enabled = false
-  version = "0.40.0"
+  version = "0.44.0"
   source  = "github.com/terraform-linters/tflint-ruleset-aws"
 }
 
