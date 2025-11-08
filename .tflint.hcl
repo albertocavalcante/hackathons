@@ -75,7 +75,7 @@ plugin "google" {
 # Azure provider rules (if we add Azure resources later)
 plugin "azurerm" {
   enabled = false
-  version = "0.28.0"
+  version = "0.30.0"
   source  = "github.com/terraform-linters/tflint-ruleset-azurerm"
 }
 
