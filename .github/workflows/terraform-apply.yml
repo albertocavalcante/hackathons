@@ -36,7 +36,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Terraform fmt check
       uses: dflook/terraform-github-actions/terraform-fmt-check@7a9d257a248c7357c1b1af7f09ff5fef8e0abb78 # v2.2.2
