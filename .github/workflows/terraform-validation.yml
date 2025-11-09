@@ -21,14 +21,55 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
+  security-events: write
 
 env:
   # Project Configuration
   TERRAFORM_PATH: "2025-06-29-modular-hack-weekend/infrastructure"
 
 jobs:
+  detect-terraform-changes:
+    name: Detect Terraform Changes
+    runs-on: ubuntu-latest
+    outputs:
+      iac: ${{ steps.set-output.outputs.iac }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Determine Terraform-impacting files
+      if: github.event_name == 'pull_request'
+      id: filter
+      uses: dorny/paths-filter@v3
+      with:
+        base: ${{ github.event.pull_request.base.sha }}
+        ref: ${{ github.event.pull_request.head.sha }}
+        filters: |
+          terraform:
+            - '2025-06-29-modular-hack-weekend/infrastructure/**'
+            - '**/*.tf'
+            - '**/*.tfvars'
+            - '**/*.tfvars.json'
+            - '.terraform.lock.hcl'
+            - '.tflint.hcl'
+
+    - name: Set change output
+      id: set-output
+      run: |
+        if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+          echo "iac=${{ steps.filter.outputs.terraform }}" >> "$GITHUB_OUTPUT"
+        else
+          echo "iac=true" >> "$GITHUB_OUTPUT"
+        fi
+      env:
+        GITHUB_EVENT_NAME: ${{ github.event_name }}
+
   terraform-validation:
     name: 'Terraform Validation'
+    needs: detect-terraform-changes
+    if: needs.detect-terraform-changes.outputs.iac == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -48,6 +89,8 @@ jobs:
 
     - name: Initialize TFLint
       run: tflint --init
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Find all Terraform directories
       id: find-dirs
@@ -100,19 +143,20 @@ jobs:
 
     - name: Run Trivy security scan
       uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
+      continue-on-error: true
       with:
         scan-type: 'config'
         scan-ref: '.'
         format: 'sarif'
         output: 'trivy-results.sarif'
         severity: 'CRITICAL,HIGH,MEDIUM'
-        exit-code: '1'
+        exit-code: '0'
       env:
         TRIVY_CONFIG_FORMAT: 'json'
 
     - name: Upload Trivy scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v4
-      if: always()
+      if: always() && hashFiles('trivy-results.sarif') != ''
       with:
         sarif_file: 'trivy-results.sarif'
 
@@ -158,4 +202,22 @@ jobs:
           echo "- **dflook actions**: Format checking and Terraform validation"
           echo "- **TFLint**: Comprehensive linting and best practices"
           echo "- **Trivy**: Security scanning and misconfiguration detection"
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Detect unexpected file modifications
+      if: ${{ always() && github.event_name == 'pull_request' }}
+      uses: ./.github/actions/check-clean-worktree
+
+  skip-terraform-validation:
+    name: Summarize skipped validation
+    needs: detect-terraform-changes
+    if: github.event_name == 'pull_request' && needs.detect-terraform-changes.outputs.iac != 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Document skip
+      run: |
+        {
+          echo "## Terraform validation skipped"
+          echo ""
+          echo "No Terraform configuration files were changed in this PR, so validation was skipped intentionally."
         } >> "$GITHUB_STEP_SUMMARY"

@@ -1,7 +1,7 @@
 # Makefile for Hackathons Mono Repository
 # Development setup and quality assurance
 
-.PHONY: help setup install-hooks run-hooks validate-all format-all lint-all clean terraform-validate terraform-format terraform-lint actions-validate security-scan modular-hackathon update-hooks dev-setup ci-simulation check-tools post-squash-rebase
+.PHONY: help setup install-hooks run-hooks validate-all format-all lint-all build clean terraform-validate terraform-format terraform-lint actions-validate security-scan modular-hackathon update-hooks dev-setup ci-simulation check-tools post-squash-rebase
 
 # Default target
 help: ## Show this help message
@@ -72,6 +72,10 @@ lint-all: ## Run all linting tools
 	@echo "actionlint..."
 	@$(MAKE) actions-validate
 	@echo "✅ All linting complete"
+
+build: ## Build all Bazel targets
+	@echo "🏗️ Building Bazel targets..."
+	bazelisk build //...
 
 # Terraform-specific targets
 terraform-validate: ## Validate all Terraform configurations

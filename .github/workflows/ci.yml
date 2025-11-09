@@ -1,0 +1,111 @@
+name: 'Bazel CI'
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '*.md'
+      - '**/*.md'
+      - 'docs/**'
+      - '.claude/**'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '*.md'
+      - '**/*.md'
+      - 'docs/**'
+      - '.claude/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  bazel-build-test:
+    name: 'Bazel Build & Test'
+    runs-on: ubuntu-latest
+    env:
+      USE_BAZELISK: true
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Bazelisk
+      uses: bazelbuild/setup-bazelisk@b39c379c82683a5f25d34f0d062761f62693e0b2 # v3.0.0
+
+    - name: Mount Bazel cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/bazel
+          ~/.cache/bazelisk
+        key: ${{ runner.os }}-bazel-${{ hashFiles('MODULE.bazel', 'MODULE.bazel.lock', '**/*.bzl', '**/BUILD', '**/BUILD.bazel') }}
+        restore-keys: |
+          ${{ runner.os }}-bazel-
+
+    - name: Configure BuildBuddy cache
+      env:
+        BUILDBUDDY_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+      run: |
+        set -euo pipefail
+        if [ -n "${BUILDBUDDY_KEY:-}" ]; then
+          echo "BUILDBUDDY_API_KEY=${BUILDBUDDY_KEY}" >> "$GITHUB_ENV"
+          echo "USE_REMOTE_CACHE=true" >> "$GITHUB_ENV"
+          echo "BuildBuddy remote cache enabled"
+        else
+          echo "USE_REMOTE_CACHE=false" >> "$GITHUB_ENV"
+          echo "No BuildBuddy API key provided; running without remote cache"
+        fi
+
+    - name: Bazel build
+      run: |
+        set -euo pipefail
+        BAZEL_FLAGS=()
+        if [ "${USE_REMOTE_CACHE:-false}" = "true" ] && [ -n "${BUILDBUDDY_API_KEY:-}" ]; then
+          BAZEL_FLAGS+=("--remote_cache=https://cloud.buildbuddy.io")
+          BAZEL_FLAGS+=("--remote_header=x-buildbuddy-api-key=${BUILDBUDDY_API_KEY}")
+          echo "Using BuildBuddy remote cache"
+        else
+          echo "Running build without remote cache"
+        fi
+
+        if [ "${#BAZEL_FLAGS[@]}" -eq 0 ]; then
+          bazelisk build //...
+        else
+          bazelisk build "${BAZEL_FLAGS[@]}" //...
+        fi
+
+    - name: Bazel test
+      run: |
+        set -euo pipefail
+        TEST_TARGETS="$(bazelisk query 'tests(//...)' || true)"
+        if [ -z "${TEST_TARGETS// }" ]; then
+          echo "No Bazel test targets detected; skipping test phase."
+          exit 0
+        fi
+
+        BAZEL_FLAGS=("--test_output=errors")
+        if [ "${USE_REMOTE_CACHE:-false}" = "true" ] && [ -n "${BUILDBUDDY_API_KEY:-}" ]; then
+          BAZEL_FLAGS+=("--remote_cache=https://cloud.buildbuddy.io")
+          BAZEL_FLAGS+=("--remote_header=x-buildbuddy-api-key=${BUILDBUDDY_API_KEY}")
+          echo "Using BuildBuddy remote cache"
+        else
+          echo "Running tests without remote cache"
+        fi
+
+        if [ "${#BAZEL_FLAGS[@]}" -eq 0 ]; then
+          bazelisk test //...
+        else
+          bazelisk test "${BAZEL_FLAGS[@]}" //...
+        fi
+
+    # TODO: Add formatting and lint workflows once canonical Bazel targets are defined.
+    - name: Detect unexpected file modifications
+      if: ${{ always() && github.event_name == 'pull_request' }}
+      uses: ./.github/actions/check-clean-worktree
