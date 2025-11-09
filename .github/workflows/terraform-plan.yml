@@ -27,8 +27,35 @@ env:
   TERRAFORM_PATH: "2025-06-29-modular-hack-weekend/infrastructure"
 
 jobs:
+  detect-terraform-changes:
+    name: Detect Terraform Changes
+    runs-on: ubuntu-latest
+    outputs:
+      iac: ${{ steps.filter.outputs.terraform }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Determine Terraform-impacting files
+      id: filter
+      uses: dorny/paths-filter@v3
+      with:
+        base: ${{ github.event.pull_request.base.sha }}
+        ref: ${{ github.event.pull_request.head.sha }}
+        filters: |
+          terraform:
+            - '2025-06-29-modular-hack-weekend/infrastructure/**'
+            - '**/*.tf'
+            - '**/*.tfvars'
+            - '**/*.tfvars.json'
+            - '.terraform.lock.hcl'
+
   terraform-plan:
     name: 'Terraform Plan'
+    needs: detect-terraform-changes
+    if: needs.detect-terraform-changes.outputs.iac == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -53,6 +80,10 @@ jobs:
         workspace: ${{ env.TF_WORKSPACE }}
         label: 'Modular Hackathon Infrastructure'
         add_github_comment: true
+
+    - name: Detect unexpected file modifications
+      if: ${{ always() && github.event_name == 'pull_request' }}
+      uses: ./.github/actions/check-clean-worktree
 
     - name: Add Cost Reminder Comment
       uses: actions/github-script@v8
@@ -79,4 +110,28 @@ jobs:
             owner: context.repo.owner,
             repo: context.repo.repo,
             body: costInfo
+          });
+
+  skip-plan-notification:
+    name: Share plan skip reason
+    needs: detect-terraform-changes
+    if: needs.detect-terraform-changes.outputs.iac != 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Comment on PR
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const body = `⚠️ Terraform workflows skipped
+
+          This pull request does not touch any Terraform configuration files or infrastructure directories, so Terraform Validation and Terraform Plan were intentionally skipped.
+
+          • If you need these workflows anyway, push a commit that changes infrastructure code or re-run after touching any \`.tf\` file.
+          • Please keep Terraform-related changes isolated so the automation can stay efficient.`;
+
+          await github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body
           });

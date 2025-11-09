@@ -1,0 +1,32 @@
+name: 'Ensure clean worktree'
+description: 'Fails if workflow steps modify tracked files (warn when only MODULE.bazel.lock changes)'
+runs:
+  using: 'composite'
+  steps:
+    - id: check
+      shell: bash
+      run: |
+        set -eo pipefail
+
+        MODIFIED_FILES="$(git status --porcelain --untracked-files=no)"
+
+        if [ -z "$MODIFIED_FILES" ]; then
+          echo "All files are clean."
+          exit 0
+        fi
+
+        echo "Detected modifications:"
+        echo "$MODIFIED_FILES"
+
+        ONLY_LOCK_CHANGES="$(echo "$MODIFIED_FILES" | grep -v 'MODULE\.bazel\.lock' || true)"
+
+        if [ -z "$ONLY_LOCK_CHANGES" ] && echo "$MODIFIED_FILES" | grep -q 'MODULE\.bazel\.lock'; then
+          echo "::warning::MODULE.bazel.lock was modified by a CI command. Commit the updated lockfile if this change is intentional."
+          git --no-pager diff -- MODULE.bazel.lock || true
+          exit 0
+        fi
+
+        echo "::error::Tracked files were modified during the workflow run. Commit or reset the generated changes."
+        git status --short --untracked-files=no
+        git --no-pager diff
+        exit 1
