@@ -47,18 +47,18 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Terraform fmt check
-      uses: dflook/terraform-github-actions/terraform-fmt-check@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      uses: dflook/terraform-github-actions/terraform-fmt-check@7a9d257a248c7357c1b1af7f09ff5fef8e0abb78 # v2.2.2
       with:
         path: ${{ env.TERRAFORM_PATH }}
 
     - name: Terraform validate
-      uses: dflook/terraform-github-actions/terraform-validate@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      uses: dflook/terraform-github-actions/terraform-validate@7a9d257a248c7357c1b1af7f09ff5fef8e0abb78 # v2.2.2
       with:
         path: ${{ env.TERRAFORM_PATH }}
         workspace: ${{ env.TF_WORKSPACE }}
 
     - name: Terraform destroy
-      uses: dflook/terraform-github-actions/terraform-destroy@1a3cda175d4cc03f253d0b5734e756cdefc2d04c # v2.1.0
+      uses: dflook/terraform-github-actions/terraform-destroy@7a9d257a248c7357c1b1af7f09ff5fef8e0abb78 # v2.2.2
       with:
         path: ${{ env.TERRAFORM_PATH }}
         workspace: ${{ env.TF_WORKSPACE }}
