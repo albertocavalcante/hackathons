@@ -105,12 +105,12 @@ jobs:
         echo "terraform_dirs=$DIRS_JSON" >> "$GITHUB_OUTPUT"
 
     - name: Terraform Format Check (dflook)
-      uses: dflook/terraform-github-actions/terraform-fmt-check@7a9d257a248c7357c1b1af7f09ff5fef8e0abb78 # v2.2.2
+      uses: dflook/terraform-github-actions/terraform-fmt-check@f8daa870ddadd8c32950e475f494e40defc0a20a # v2.2.3
       with:
         path: ${{ env.TERRAFORM_PATH }}
 
     - name: Terraform Validate (dflook)
-      uses: dflook/terraform-github-actions/terraform-validate@7a9d257a248c7357c1b1af7f09ff5fef8e0abb78 # v2.2.2
+      uses: dflook/terraform-github-actions/terraform-validate@f8daa870ddadd8c32950e475f494e40defc0a20a # v2.2.3
       with:
         path: ${{ env.TERRAFORM_PATH }}
 
