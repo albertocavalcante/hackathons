@@ -68,7 +68,7 @@ plugin "aws" {
 # Google Cloud provider rules (if we add GCP resources later)
 plugin "google" {
   enabled = false
-  version = "0.37.1"
+  version = "0.39.0"
   source  = "github.com/terraform-linters/tflint-ruleset-google"
 }
 
