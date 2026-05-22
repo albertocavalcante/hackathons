@@ -64,7 +64,7 @@ jobs:
         workspace: ${{ env.TF_WORKSPACE }}
 
     - name: Comment Results
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       with:
         script: |
           const output = `### 🔥 Infrastructure Destroyed Successfully!
