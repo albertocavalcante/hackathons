@@ -40,7 +40,7 @@ jobs:
 
     - name: Determine Terraform-impacting files
       id: filter
-      uses: dorny/paths-filter@v3
+      uses: dorny/paths-filter@v4
       with:
         base: ${{ github.event.pull_request.base.sha }}
         ref: ${{ github.event.pull_request.head.sha }}
