@@ -35,7 +35,7 @@ jobs:
       iac: ${{ steps.set-output.outputs.iac }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
@@ -74,7 +74,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v7
 
     - name: Cache TFLint plugins
       uses: actions/cache@v4
