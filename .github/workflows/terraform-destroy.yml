@@ -44,7 +44,7 @@ jobs:
         echo "✅ Destruction confirmed. Proceeding..."
 
     - name: Checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
     - name: Terraform fmt check
       uses: dflook/terraform-github-actions/terraform-fmt-check@7a9d257a248c7357c1b1af7f09ff5fef8e0abb78 # v2.2.2
@@ -64,7 +64,7 @@ jobs:
         workspace: ${{ env.TF_WORKSPACE }}
 
     - name: Comment Results
-      uses: actions/github-script@v8
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       with:
         script: |
           const output = `### 🔥 Infrastructure Destroyed Successfully!
